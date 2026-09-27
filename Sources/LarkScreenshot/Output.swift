@@ -29,7 +29,7 @@ enum Output {
         formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png]
-        panel.nameFieldStringValue = "Snip \(formatter.string(from: Date())).png"
+        panel.nameFieldStringValue = "Screenshot \(formatter.string(from: Date())).png"
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
         panel.level = .modalPanel
         guard panel.runModal() == .OK, let url = panel.url, let data = pngData(image, pointSize: pointSize) else { return }

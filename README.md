@@ -1,4 +1,4 @@
-# Snip
+# lark-screenshot
 
 A Lark/Feishu-style screenshot tool for macOS. Lives in the menu bar; press **⌃⇧A** anywhere.
 
@@ -16,10 +16,10 @@ Pinned images: drag to move, scroll to zoom, right-click for Copy/Save/Close, do
 ## Build
 
 ```sh
-./build.sh            # builds build/Snip.app
+./build.sh            # builds build/Lark Screenshot.app
 ./build.sh --install  # installs to /Applications and launches
 ```
 
-Requires macOS 14+ and Screen Recording permission (System Settings → Privacy & Security → Screen & System Audio Recording). The app is signed with your Apple Development identity so the grant survives rebuilds.
+Requires macOS 14+. On first launch the app opens a setup window that deep-links to System Settings → Privacy & Security → Screen & System Audio Recording, shows live whether access is granted, and offers a one-click relaunch (macOS only applies the grant after relaunch). Reopen it anytime from the menu bar: **Screen Recording Permission…**. The app is signed with your Apple Development identity so the grant survives rebuilds.
 
-Scripts can trigger a capture by posting the distributed notification `com.anup.snip.capture`.
+Scripts can trigger a capture by posting the distributed notification `com.anup.lark-screenshot.capture`.

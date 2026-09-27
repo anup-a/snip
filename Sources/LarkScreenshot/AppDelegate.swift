@@ -9,7 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Snip")
+        statusItem.button?.image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Lark Screenshot")
 
         let menu = NSMenu()
         let take = NSMenuItem(title: "Take Screenshot", action: #selector(captureFromMenu), keyEquivalent: "a")
@@ -17,25 +17,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         take.target = self
         menu.addItem(take)
         menu.addItem(.separator())
+        let permission = NSMenuItem(title: "Screen Recording Permission…", action: #selector(showPermission), keyEquivalent: "")
+        permission.target = self
+        menu.addItem(permission)
         let login = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Snip", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit Lark Screenshot", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
 
         hotKey = HotKey(keyCode: UInt32(kVK_ANSI_A), modifiers: UInt32(controlKey | shiftKey)) { [weak self] in
             self?.capture()
         }
 
-        // Lets scripts trigger a capture: post "com.anup.snip.capture" as a distributed notification.
-        DistributedNotificationCenter.default().addObserver(forName: Notification.Name("com.anup.snip.capture"), object: nil, queue: .main) { [weak self] _ in
+        // Lets scripts trigger a capture: post "com.anup.lark-screenshot.capture" as a distributed notification.
+        DistributedNotificationCenter.default().addObserver(forName: Notification.Name("com.anup.lark-screenshot.capture"), object: nil, queue: .main) { [weak self] _ in
             self?.capture()
         }
 
         if !CGPreflightScreenCaptureAccess() {
-            CGRequestScreenCaptureAccess()
+            PermissionWindow.show()
         }
     }
 
@@ -45,15 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func capture() {
-        NSLog("Snip capture requested (screen access: \(CGPreflightScreenCaptureAccess()))")
+        NSLog("Lark Screenshot capture requested (screen access: \(CGPreflightScreenCaptureAccess()))")
         guard session == nil else { return }
         guard CGPreflightScreenCaptureAccess() else {
-            CGRequestScreenCaptureAccess()
-            NSApp.activate(ignoringOtherApps: true)
-            let alert = NSAlert()
-            alert.messageText = "Snip needs Screen Recording access"
-            alert.informativeText = "Enable Snip in System Settings → Privacy & Security → Screen & System Audio Recording, then relaunch Snip."
-            alert.runModal()
+            PermissionWindow.show()
             return
         }
         Task { @MainActor in
@@ -64,10 +62,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.session = s
                 s.begin()
             } catch {
-                NSLog("Snip capture failed: \(error)")
+                NSLog("Lark Screenshot capture failed: \(error)")
             }
         }
     }
+
+    @objc private func showPermission() { PermissionWindow.show() }
 
     @objc private func toggleLaunchAtLogin(_ item: NSMenuItem) {
         do {
@@ -77,7 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 try SMAppService.mainApp.register()
             }
         } catch {
-            NSLog("Snip login item error: \(error)")
+            NSLog("Lark Screenshot login item error: \(error)")
         }
         item.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }

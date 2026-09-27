@@ -2,9 +2,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "Snip",
+    name: "LarkScreenshot",
     platforms: [.macOS(.v14)],
     targets: [
-        .executableTarget(name: "Snip", path: "Sources/Snip")
+        .executableTarget(name: "LarkScreenshot", path: "Sources/LarkScreenshot")
     ]
 )
