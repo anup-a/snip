@@ -1,0 +1,62 @@
+{
+  "fill": {
+    "automatic-gradient": "display-p3:0.07843,0.10196,0.18039,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "brackets.svg",
+          "name": "brackets",
+          "glass": true,
+          "position": {
+            "scale": 1,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.4
+      },
+      "specular": true
+    },
+    {
+      "layers": [
+        {
+          "image-name": "selection.svg",
+          "name": "selection",
+          "glass": true,
+          "position": {
+            "scale": 1,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.4
+      },
+      "specular": true
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "fill": {
+    "automatic-gradient": "display-p3:0.95686,0.96471,0.98039,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "arrow.svg",
+          "name": "arrow",
+          "glass": true,
+          "position": {
+            "scale": 1,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.4
+      },
+      "specular": true
+    },
+    {
+      "layers": [
+        {
+          "image-name": "selection.svg",
+          "name": "selection",
+          "glass": true,
+          "position": {
+            "scale": 1,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.4
+      },
+      "specular": true
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}
