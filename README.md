@@ -14,6 +14,7 @@
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white">
   <img alt="No network" src="https://img.shields.io/badge/network-none-2ea44f">
   <img alt="Sandboxed" src="https://img.shields.io/badge/App%20Sandbox-on-0a84ff">
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
 <p align="center">
@@ -140,6 +141,10 @@ archive.sh                sandboxed Mac App Store build
 - Snapping to individual buttons or panels inside a window (only whole windows for now)
 
 Issues and pull requests are welcome.
+
+## License
+
+[MIT](LICENSE) © 2026 Anup Aglawe
 
 ---
 
