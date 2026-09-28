@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .shot { --a: #ff5a45; --a2: #ffa07a; --a3: #ff2e7a; }
+  .stage { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; perspective: 2600px; perspective-origin: 50% 40%; }
+  .tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: translate3d(0,0,0) rotateX(7deg) rotateY(-11deg); transform-origin: 50% 60%; }
+  #base { left: 250px; top: 276px; border-radius: 12px; }
+  .tilt .lift { transform: translateZ(70px); }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Mark it up <span class="hl">in seconds</span></h1>
+    <p class="sub">Boxes, arrows, ink, numbered steps, and text. Press <span class="kc">↩</span> to copy.</p>
+  </header>
+  <div class="stage"><div class="tilt">
+    <div class="crop card" id="base" data-src="raw/dash-annotate.png" data-rect="110,70,1080,720" data-scale="0.86" style="position:absolute"></div>
+    <!-- The real toolbar and color bar, lifted toward the viewer. -->
+    <div class="crop lift" data-src="raw/dash-annotate.png" data-rect="740,678,440,82" data-follow="#base" data-lift="1.18" style="border-radius:10px"></div>
+  </div></div>
+
+  <div class="tag" style="left:1146px; top:436px">
+    <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="#fff"/><text x="10" y="14.2" text-anchor="middle" font-size="12" font-weight="700" fill="#e0443a" font-family="-apple-system">1</text></svg>
+    Numbered steps
+  </div>
+  <div class="tag glass" style="left:92px; top:560px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16 15 5M9 5h6v6"/></svg>
+    Arrows, boxes, ellipses
+  </div>
+  <div class="tag glass" style="left:1180px; top:808px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="10" r="3" fill="currentColor"/><circle cx="14" cy="10" r="3"/></svg>
+    Six colors, three sizes
+  </div>
+  <div class="grain"></div>
+</div>
+<script src="shared.js"></script>
+</body></html>

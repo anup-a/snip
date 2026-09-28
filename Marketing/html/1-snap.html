@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .shot { --a: #2f74ff; --a2: #7fb2ff; --a3: #6a4dff; }
+  #disp { left: 170px; top: 272px; }
+  .keywrap { position: absolute; left: 92px; top: 694px; z-index: 22; transform: rotate(-4deg); }
+  .keywrap::before { content: ""; position: absolute; inset: -30px -40px; border-radius: 40px;
+    background: radial-gradient(closest-side, rgba(47,116,255,.55), transparent); filter: blur(20px); z-index: -1; }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Snap any <span class="hl">window or region</span></h1>
+    <p class="sub">Click a window or drag any area. The screen freezes while you frame it.</p>
+  </header>
+
+  <div class="display" id="disp">
+    <div class="crop" id="base" data-src="raw/dash-hover.png" data-rect="0,0,1440,900" data-scale="0.751"></div>
+    <!-- The real magnifier, lifted to native 1:1 size. -->
+    <div class="crop lift" data-src="raw/dash-hover.png" data-rect="1022,437,128,143" data-follow="#base" data-lift="1.3316" style="border-radius:6px"></div>
+  </div>
+
+  <div class="tag" style="left:1096px; top:338px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="15" height="13" rx="2.5"/><path d="M2.5 7.5h15"/></svg>
+    Click to snap the window
+  </div>
+  <div class="tag glass" style="left:1058px; top:726px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17M8.5 6v5M6 8.5h5"/></svg>
+    Magnifier for exact edges
+  </div>
+
+  <div class="keywrap">
+    <div class="keys">
+      <div class="key"><span class="g">⌘</span><span class="n">command</span></div>
+      <div class="key"><span class="g">⇧</span><span class="n">shift</span></div>
+      <div class="key letter"><span class="g">A</span></div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+<script src="shared.js"></script>
+</body></html>

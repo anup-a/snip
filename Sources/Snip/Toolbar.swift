@@ -3,7 +3,7 @@ import AppKit
 final class IconButton: NSButton {
     var isActive = false {
         didSet {
-            contentTintColor = isActive ? larkBlue : baseTint
+            contentTintColor = isActive ? accentBlue : baseTint
             needsDisplay = true
         }
     }
@@ -36,7 +36,7 @@ final class IconButton: NSButton {
     override func draw(_ dirtyRect: NSRect) {
         if isActive {
             NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 5, yRadius: 5)
-                .fill(larkBlue.withAlphaComponent(0.12))
+                .fill(accentBlue.withAlphaComponent(0.12))
         }
         super.draw(dirtyRect)
     }
@@ -70,25 +70,25 @@ final class PaintButton: NSButton {
     override func draw(_ dirtyRect: NSRect) { painter(bounds, isActive) }
 }
 
+private final class Separator: NSView {
+    override var intrinsicContentSize: NSSize { NSSize(width: 1, height: 18) }
+    override func draw(_ dirtyRect: NSRect) { NSBezierPath(rect: bounds).fill(NSColor(white: 0.85, alpha: 1)) }
+}
+
 private func separator() -> NSView {
-    let view = NSView()
-    view.wantsLayer = true
-    view.layer?.backgroundColor = NSColor(white: 0.85, alpha: 1).cgColor
+    let view = Separator()
     view.translatesAutoresizingMaskIntoConstraints = false
     view.widthAnchor.constraint(equalToConstant: 1).isActive = true
     view.heightAnchor.constraint(equalToConstant: 18).isActive = true
     return view
 }
 
-/// White floating panel with a horizontal row of controls.
 class FloatingBar: NSView {
     let stack = NSStackView()
 
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true
-        layer?.backgroundColor = NSColor.white.cgColor
-        layer?.cornerRadius = 6
         layer?.masksToBounds = false
         layer?.shadowColor = NSColor.black.cgColor
         layer?.shadowOpacity = 0.25
@@ -108,6 +108,11 @@ class FloatingBar: NSView {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    // Drawn rather than layer-styled so offscreen renders (cacheDisplay) include it.
+    override func draw(_ dirtyRect: NSRect) {
+        NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill(.white)
+    }
 
     override func mouseDown(with event: NSEvent) {} // don't leak clicks to the overlay
 }
@@ -132,7 +137,7 @@ final class ToolbarView: FloatingBar {
         stack.addArrangedSubview(IconButton(symbol: "square.and.arrow.down", tip: "Save (⌘S)") { [weak self] in self?.overlay?.save() })
         stack.addArrangedSubview(separator())
         stack.addArrangedSubview(IconButton(symbol: "xmark", tip: "Cancel (Esc)") { [weak self] in self?.overlay?.cancel() })
-        stack.addArrangedSubview(IconButton(symbol: "checkmark", tip: "Copy (Enter)", tint: larkBlue) { [weak self] in self?.overlay?.done() })
+        stack.addArrangedSubview(IconButton(symbol: "checkmark", tip: "Copy (Enter)", tint: accentBlue) { [weak self] in self?.overlay?.done() })
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -146,6 +151,7 @@ final class OptionsView: FloatingBar {
     private weak var overlay: OverlayView?
     private var sizeButtons: [PaintButton] = []
     private var colorButtons: [PaintButton] = []
+    private let colorSeparator = separator()
 
     init(overlay: OverlayView) {
         self.overlay = overlay
@@ -153,19 +159,19 @@ final class OptionsView: FloatingBar {
         for (level, diameter) in [4.0, 7.0, 10.0].enumerated() {
             let button = PaintButton(painter: { bounds, active in
                 let dot = CGRect(x: bounds.midX - diameter / 2, y: bounds.midY - diameter / 2, width: diameter, height: diameter)
-                NSBezierPath(ovalIn: dot).fill(active ? larkBlue : NSColor(white: 0.55, alpha: 1))
+                NSBezierPath(ovalIn: dot).fill(active ? accentBlue : NSColor(white: 0.55, alpha: 1))
             }) { [weak self] in self?.overlay?.setSizeLevel(level) }
             sizeButtons.append(button)
             stack.addArrangedSubview(button)
         }
-        stack.addArrangedSubview(separator())
+        stack.addArrangedSubview(colorSeparator)
         for color in palette {
             let button = PaintButton(painter: { bounds, active in
                 let swatch = bounds.insetBy(dx: 6, dy: 6)
                 if active {
                     let ring = NSBezierPath(roundedRect: bounds.insetBy(dx: 3, dy: 3), xRadius: 4, yRadius: 4)
                     ring.lineWidth = 1.5
-                    larkBlue.setStroke()
+                    accentBlue.setStroke()
                     ring.stroke()
                 }
                 NSBezierPath(roundedRect: swatch, xRadius: 2, yRadius: 2).fill(color)
@@ -188,5 +194,6 @@ final class OptionsView: FloatingBar {
         for (i, b) in colorButtons.enumerated() { b.isActive = palette[i] == overlay.color }
         // Mosaic has no color.
         colorButtons.forEach { $0.isHidden = overlay.tool == .mosaic }
+        colorSeparator.isHidden = overlay.tool == .mosaic
     }
 }

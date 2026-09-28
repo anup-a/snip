@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .shot { --a: #ff9f1a; --a2: #ffd27a; --a3: #ff5e3a; }
+  #disp { left: 170px; top: 272px; }
+  .float { box-shadow: 0 0 0 1px rgba(51,112,255,.5), 0 60px 120px -10px rgba(0,0,0,.7), 0 24px 50px rgba(0,0,0,.35), 0 0 90px color-mix(in oklab, var(--a) 35%, transparent); border-radius: 11px; position: absolute; overflow: hidden; }
+  .stack { position: absolute; left: 1118px; top: 452px; display: flex; flex-direction: column; gap: 14px; z-index: 20; }
+  .stack .tag { position: relative; }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Pin it <span class="hl">on top</span></h1>
+    <p class="sub">Keep a snip floating above your work while you write, code, or compare.</p>
+  </header>
+  <div class="display" id="disp">
+    <div class="crop" id="base" data-src="raw/dash-pin.png" data-rect="0,0,1440,900" data-scale="0.751"></div>
+    <!-- The real pinned snip, lifted a little further off the desktop. -->
+    <div class="crop float" data-src="raw/dash-pin.png" data-rect="348,200,868,548" data-follow="#base" data-lift="1.045"></div>
+  </div>
+  <div class="stack">
+    <div class="tag">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h6l-1 5 3 3H5l3-3-1-5zM10 11v6"/></svg>
+      Above every window
+    </div>
+    <div class="tag glass" style="margin-left:34px">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5v15M2.5 10h15M7.5 5 10 2.5 12.5 5M7.5 15l2.5 2.5 2.5-2.5M5 7.5 2.5 10 5 12.5M15 7.5l2.5 2.5-2.5 2.5"/></svg>
+      Drag to move
+    </div>
+    <div class="tag glass" style="margin-left:14px">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17M8.5 6v5M6 8.5h5"/></svg>
+      Scroll to zoom
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+<script src="shared.js"></script>
+</body></html>

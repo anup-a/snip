@@ -33,6 +33,13 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     private(set) var color = palette[0]
     private(set) var sizeLevel = 1
 
+    /// Set only by DemoRenderer: the view paints the frozen screen itself for offscreen renders.
+    var demoBackground: CGImage?
+    /// Marketing renders hide the pixel-size chip when it would sit on top of the content.
+    var demoShowsSizeLabel = true
+    /// Cocoa-point offset from the cursor to the loupe. Nil uses the normal placement.
+    var demoMagnifierOffset: CGPoint?
+
     private var toolbar: ToolbarView!
     private var options: OptionsView!
 
@@ -84,6 +91,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
 
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        if let demoBackground { ctx.draw(demoBackground, in: bounds) }
         let highlight: CGRect? = otherActive ? nil : (selection ?? hoverRect)
 
         ctx.saveGState()
@@ -103,7 +111,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
             NSGraphicsContext.restoreGraphicsState()
         }
 
-        larkBlue.setStroke()
+        accentBlue.setStroke()
         let border = NSBezierPath(rect: highlight.insetBy(dx: -1, dy: -1))
         border.lineWidth = 2
         border.stroke()
@@ -137,11 +145,12 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         for (_, _, p) in handlePoints(r) {
             let box = CGRect(x: p.x - 3.5, y: p.y - 3.5, width: 7, height: 7)
             NSBezierPath(rect: box).fill(.white)
-            NSBezierPath(rect: box.insetBy(dx: 1, dy: 1)).fill(larkBlue)
+            NSBezierPath(rect: box.insetBy(dx: 1, dy: 1)).fill(accentBlue)
         }
     }
 
     private func drawSizeLabel(_ r: CGRect) {
+        guard demoShowsSizeLabel else { return }
         let text = "\(Int(round(r.width * scale))) × \(Int(round(r.height * scale)))" as NSString
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium),
@@ -176,8 +185,12 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         let total = CGSize(width: box.width, height: box.height + infoHeight)
 
         var origin = CGPoint(x: p.x + 20, y: p.y - 20 - total.height)
-        if origin.x + total.width > bounds.maxX { origin.x = p.x - 20 - total.width }
-        if origin.y < bounds.minY { origin.y = p.y + 20 }
+        if let demoMagnifierOffset {
+            origin = CGPoint(x: p.x + demoMagnifierOffset.x, y: p.y + demoMagnifierOffset.y)
+        } else {
+            if origin.x + total.width > bounds.maxX { origin.x = p.x - 20 - total.width }
+            if origin.y < bounds.minY { origin.y = p.y + 20 }
+        }
         let zoomRect = CGRect(x: origin.x, y: origin.y + infoHeight, width: box.width, height: box.height)
         let infoRect = CGRect(x: origin.x, y: origin.y, width: box.width, height: infoHeight)
 
@@ -199,7 +212,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         // Crosshair through the center pixel.
         let cx = zoomRect.minX + CGFloat(cols / 2) * zoom
         let cy = zoomRect.maxY - CGFloat(rows / 2 + 1) * zoom
-        let cross = larkBlue.withAlphaComponent(0.35)
+        let cross = accentBlue.withAlphaComponent(0.35)
         NSBezierPath(rect: CGRect(x: zoomRect.minX, y: cy, width: zoomRect.width, height: zoom)).fill(cross)
         NSBezierPath(rect: CGRect(x: cx, y: zoomRect.minY, width: zoom, height: zoomRect.height)).fill(cross)
         NSColor.white.setStroke()
@@ -613,7 +626,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         let input = CIImage(cgImage: shot.image)
         let filter = CIFilter.pixellate()
         filter.inputImage = input.clampedToExtent()
-        filter.scale = Float(10 * scale)
+        filter.scale = Float(6 * scale)
         filter.center = .zero
         guard let output = filter.outputImage?.cropped(to: input.extent) else { return nil }
         return CIContext().createCGImage(output, from: input.extent)
@@ -663,7 +676,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
 
     func pin() {
         guard let (image, size) = finishedImage(), let sel = selection else { return }
-        let frame = sel.offsetBy(dx: shot.screen.frame.minX, dy: shot.screen.frame.minY)
+        let frame = sel.offsetBy(dx: shot.frame.minX, dy: shot.frame.minY)
         session?.finish()
         PinWindow.show(image: image, pointSize: size, frame: frame)
     }
@@ -675,4 +688,28 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     }
 
     func cancel() { session?.cancel() }
+}
+
+// MARK: Demo rendering
+
+extension OverlayView {
+    /// Puts the overlay into a scripted state for offscreen marketing renders.
+    func applyDemoState(selection: CGRect?, mouse: CGPoint?, annotations: [Annotation], tool: Tool?, color: NSColor, sizeLevel: Int) {
+        self.selection = selection
+        self.mouse = mouse
+        self.annotations = annotations
+        self.tool = tool
+        self.color = color
+        self.sizeLevel = sizeLevel
+        phase = selection == nil ? .hover : .selected
+        updateHover()
+        toolbar.refresh()
+        options.refresh()
+        layoutToolbar()
+        needsDisplay = true
+    }
+
+    var visibleBarFrames: [CGRect] {
+        [toolbar, options].compactMap { $0 }.filter { !$0.isHidden }.map(\.frame)
+    }
 }

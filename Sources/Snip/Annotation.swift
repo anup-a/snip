@@ -1,11 +1,11 @@
 import AppKit
 
-let larkBlue = NSColor(srgbRed: 0x33 / 255, green: 0x70 / 255, blue: 0xFF / 255, alpha: 1)
+let accentBlue = NSColor(srgbRed: 0x33 / 255, green: 0x70 / 255, blue: 0xFF / 255, alpha: 1)
 
 let palette: [NSColor] = [
     NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1), // red
     NSColor(srgbRed: 0xFF / 255, green: 0xC6 / 255, blue: 0x0A / 255, alpha: 1), // yellow
-    larkBlue,
+    accentBlue,
     NSColor(srgbRed: 0x34 / 255, green: 0xC7 / 255, blue: 0x24 / 255, alpha: 1), // green
     NSColor(srgbRed: 0x1F / 255, green: 0x23 / 255, blue: 0x29 / 255, alpha: 1), // black
     .white,
@@ -127,7 +127,7 @@ enum Annotation {
         return path
     }
 
-    /// Tapered arrow with a filled head, like Lark's.
+    /// Tapered arrow with a filled head.
     static func arrowPath(from: CGPoint, to: CGPoint, width: CGFloat) -> NSBezierPath? {
         let dx = to.x - from.x, dy = to.y - from.y
         let length = hypot(dx, dy)

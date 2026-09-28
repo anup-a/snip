@@ -54,7 +54,7 @@ private final class PinView: NSView {
         wantsLayer = true
         layer?.contents = pin.image
         layer?.contentsGravity = .resize
-        layer?.borderColor = larkBlue.withAlphaComponent(0.6).cgColor
+        layer?.borderColor = accentBlue.withAlphaComponent(0.6).cgColor
         layer?.borderWidth = 1
     }
 

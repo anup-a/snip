@@ -30,6 +30,8 @@ final class CaptureSession {
         windows.map(\.overlay).first { $0.phase != .hover }
     }
 
+    var overlays: [OverlayView] { windows.map(\.overlay) }
+
     func refreshAll() {
         for window in windows { window.overlay.needsDisplay = true }
     }
@@ -51,7 +53,7 @@ final class OverlayWindow: NSPanel {
     let overlay: OverlayView
 
     init(shot: ScreenShot, windowRects: [CGRect], session: CaptureSession) {
-        let frame = shot.screen.frame
+        let frame = shot.frame
         let local = windowRects
             .map { $0.offsetBy(dx: -frame.minX, dy: -frame.minY) }
             .filter { $0.intersects(CGRect(origin: .zero, size: frame.size)) }

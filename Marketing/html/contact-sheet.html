@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1800px;background:#0b0c12;font-family:-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#fff}
+body{padding:40px}
+h2{font-size:22px;font-weight:650;letter-spacing:-.01em;margin-bottom:24px;color:rgba(255,255,255,.85)}
+.row{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:18px}
+figure{display:flex;flex-direction:column;gap:8px}
+img{width:100%;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.5)}
+figcaption{font-size:13px;color:rgba(255,255,255,.55)}
+</style></head><body>
+<h2>Snip: Mac App Store screenshots v2 (2880×1800)</h2>
+<div class="row" id="row"></div>
+<script>
+const shots=[['1-snap','1 Snap'],['2-markup','2 Mark up'],['3-private','3 Private'],['4-pin','4 Pin'],['5-on-device','5 On your Mac']];
+const row=document.getElementById('row');row.style.setProperty('--n',shots.length);
+for(const [f,c] of shots){row.insertAdjacentHTML('beforeend',`<figure><img src="../appstore-v2/${f}.png"><figcaption>${c}</figcaption></figure>`)}
+</script></body></html>

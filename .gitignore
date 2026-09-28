@@ -1,2 +1,5 @@
 .build/
 build/
+*.provisionprofile
+node_modules/
+.DS_Store

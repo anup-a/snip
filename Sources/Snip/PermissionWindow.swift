@@ -1,6 +1,6 @@
 import AppKit
 
-/// Walks the user through granting Screen Recording, then relaunches Lark Screenshot so the grant takes effect.
+/// Walks the user through granting Screen Recording, then relaunches Snip so the grant takes effect.
 final class PermissionWindow: NSWindow {
     private static var shared: PermissionWindow?
 
@@ -22,24 +22,24 @@ final class PermissionWindow: NSWindow {
     private init() {
         super.init(contentRect: CGRect(x: 0, y: 0, width: 480, height: 400), styleMask: [.titled, .closable],
                    backing: .buffered, defer: false)
-        title = "Set Up Lark Screenshot"
+        title = "Set Up Snip"
         isReleasedWhenClosed = false
         level = .floating
 
         let icon = NSImageView(image: NSImage(systemSymbolName: "scissors.circle.fill", accessibilityDescription: nil)!
             .withSymbolConfiguration(.init(pointSize: 44, weight: .regular))!)
-        icon.contentTintColor = larkBlue
+        icon.contentTintColor = accentBlue
 
-        let heading = NSTextField(labelWithString: "Allow Lark Screenshot to capture your screen")
+        let heading = NSTextField(labelWithString: "Allow Snip to capture your screen")
         heading.font = .systemFont(ofSize: 17, weight: .semibold)
 
         let intro = NSTextField(wrappingLabelWithString:
-            "macOS requires Screen Recording permission before any app can take screenshots. Lark Screenshot only captures when you press ⌃⇧A and never records video.")
+            "macOS requires Screen Recording permission before any app can take screenshots. Snip only captures when you press ⌘⇧A and never records video.")
         intro.textColor = .secondaryLabelColor
 
         let steps = NSStackView(views: [
             step(1, "Click **Open System Settings** below."),
-            step(2, "Under **Screen & System Audio Recording**, turn on the switch next to **Lark Screenshot**. If Lark Screenshot isn't listed, click **+** and choose Lark Screenshot from Applications."),
+            step(2, "Under **Screen & System Audio Recording**, turn on the switch next to **Snip**. If Snip isn't listed, click **+** and choose Snip from Applications."),
             step(3, "Confirm with your password or Touch ID if asked."),
             step(4, "Come back here and click **Relaunch**. macOS applies the permission after a relaunch."),
         ])
@@ -126,7 +126,7 @@ final class PermissionWindow: NSWindow {
         statusIcon.image = NSImage(systemSymbolName: granted ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
                                    accessibilityDescription: nil)
         statusIcon.contentTintColor = granted ? .systemGreen : .systemOrange
-        statusLabel.stringValue = granted ? "Access granted. Press ⌃⇧A to take a screenshot." : "Waiting for permission…"
+        statusLabel.stringValue = granted ? "Access granted. Press ⌘⇧A to take a screenshot." : "Waiting for permission…"
         if granted {
             primaryButton.title = "Done"
             primaryButton.action = #selector(finish)
@@ -135,7 +135,7 @@ final class PermissionWindow: NSWindow {
     }
 
     @objc private func openSettings() {
-        // Registers Lark Screenshot in the Screen Recording list (and shows the system prompt the first time).
+        // Registers Snip in the Screen Recording list (and shows the system prompt the first time).
         CGRequestScreenCaptureAccess()
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
         NSWorkspace.shared.open(url)
@@ -180,7 +180,7 @@ private final class StepBadge: NSView {
     override func draw(_ dirtyRect: NSRect) {
         let side = min(bounds.width, bounds.height)
         let circle = CGRect(x: bounds.midX - side / 2, y: bounds.midY - side / 2, width: side, height: side)
-        NSBezierPath(ovalIn: circle).fill(larkBlue)
+        NSBezierPath(ovalIn: circle).fill(accentBlue)
         let text = "\(number)" as NSString
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11.5, weight: .bold),

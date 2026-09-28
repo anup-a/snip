@@ -15,7 +15,10 @@ final class HotKey {
         HotKey.handlers[id] = handler
         HotKey.installHandlerIfNeeded()
         let hotKeyID = EventHotKeyID(signature: OSType(0x534E_4950), id: id) // 'SNIP'
-        RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &ref)
+        let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &ref)
+        if status != noErr {
+            NSLog("Snip failed to register hotkey ⌘⇧A (OSStatus \(status))")
+        }
     }
 
     deinit {

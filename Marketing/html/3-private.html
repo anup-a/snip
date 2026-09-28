@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .shot { --a: #8b5cf6; --a2: #c7a8ff; --a3: #4f46e5; }
+  .stage { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; perspective: 2600px; perspective-origin: 50% 40%; }
+  .tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(7deg) rotateY(11deg); transform-origin: 50% 60%; }
+  #base { left: 290px; top: 278px; border-radius: 12px; }
+  .tilt .lift { transform: translateZ(90px); }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Hide what's <span class="hl">private</span></h1>
+    <p class="sub">Brush a mosaic over passwords, emails, and numbers before you share.</p>
+  </header>
+  <div class="stage"><div class="tilt">
+    <div class="crop card" id="base" data-src="raw/chat-mosaic.png" data-rect="150,80,1000,690" data-scale="0.88" style="position:absolute"></div>
+    <!-- The mosaicked message, lifted. -->
+    <div class="crop lift" data-src="raw/chat-mosaic.png" data-rect="360,298,520,90" data-follow="#base" data-lift="1.24" style="border-radius:12px"></div>
+  </div></div>
+
+  <div class="tag" style="left:96px; top:470px">
+    <svg viewBox="0 0 20 20" fill="#fff"><rect x="3" y="3" width="4.5" height="4.5" rx="1"/><rect x="12.5" y="3" width="4.5" height="4.5" rx="1" opacity=".5"/><rect x="7.75" y="7.75" width="4.5" height="4.5" rx="1" opacity=".8"/><rect x="3" y="12.5" width="4.5" height="4.5" rx="1" opacity=".5"/><rect x="12.5" y="12.5" width="4.5" height="4.5" rx="1"/></svg>
+    Mosaic brush
+  </div>
+  <div class="tag glass" style="left:1148px; top:770px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9"/></svg>
+    Share the rest safely
+  </div>
+  <div class="grain"></div>
+</div>
+<script src="shared.js"></script>
+</body></html>

@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Builds "Snip.app"; --install copies it to /Applications and launches it.
+# Builds a sandboxed, hardened Snip.app signed for the Mac App Store.
+# Does not replace /Applications/Snip.app. Pass --install to do that.
 set -euo pipefail
 cd "$(dirname "$0")"
 swift build -c release
@@ -9,9 +10,10 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/Snip "$APP/Contents/MacOS/Snip"
 cp Info.plist "$APP/Contents/Info.plist"
 cp Resources/Snip.icns "$APP/Contents/Resources/Snip.icns"
-# A stable signing identity keeps the Screen Recording grant across rebuilds.
-IDENTITY=$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development/ {print $2; exit}')
-codesign --force --sign "${IDENTITY:--}" "$APP"
+cp Resources/Snip_Mac_App_Store.provisionprofile "$APP/Contents/embedded.provisionprofile"
+IDENTITY="Apple Distribution: Anup Aglawe (384UFAG6NB)"
+codesign --force --options runtime --timestamp --entitlements Snip.entitlements --sign "$IDENTITY" "$APP"
+codesign --verify --strict --verbose=2 "$APP"
 if [[ "${1:-}" == "--install" ]]; then
   pkill -x Snip 2>/dev/null || true
   rm -rf "/Applications/Snip.app"

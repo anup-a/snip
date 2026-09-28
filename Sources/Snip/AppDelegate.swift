@@ -8,12 +8,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var session: CaptureSession?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--render-demo"), args.count > i + 2 {
+            DemoRenderer.render(script: args[i + 1], to: args[i + 2])
+            exit(0)
+        }
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Lark Screenshot")
+        statusItem.button?.image = NSImage(systemSymbolName: "scissors", accessibilityDescription: "Snip")
 
         let menu = NSMenu()
         let take = NSMenuItem(title: "Take Screenshot", action: #selector(captureFromMenu), keyEquivalent: "a")
-        take.keyEquivalentModifierMask = [.control, .shift]
+        take.keyEquivalentModifierMask = [.command, .shift]
         take.target = self
         menu.addItem(take)
         menu.addItem(.separator())
@@ -25,15 +30,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Lark Screenshot", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit Snip", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
 
-        hotKey = HotKey(keyCode: UInt32(kVK_ANSI_A), modifiers: UInt32(controlKey | shiftKey)) { [weak self] in
+        hotKey = HotKey(keyCode: UInt32(kVK_ANSI_A), modifiers: UInt32(cmdKey | shiftKey)) { [weak self] in
             self?.capture()
         }
 
-        // Lets scripts trigger a capture: post "com.anup.lark-screenshot.capture" as a distributed notification.
-        DistributedNotificationCenter.default().addObserver(forName: Notification.Name("com.anup.lark-screenshot.capture"), object: nil, queue: .main) { [weak self] _ in
+        // Lets scripts trigger a capture: post "com.anup.snip.capture" as a distributed notification.
+        DistributedNotificationCenter.default().addObserver(forName: Notification.Name("com.anup.snip.capture"), object: nil, queue: .main) { [weak self] _ in
             self?.capture()
         }
 
@@ -48,7 +53,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func capture() {
-        NSLog("Lark Screenshot capture requested (screen access: \(CGPreflightScreenCaptureAccess()))")
+        NSLog("Snip capture requested (screen access: \(CGPreflightScreenCaptureAccess()))")
         guard session == nil else { return }
         guard CGPreflightScreenCaptureAccess() else {
             PermissionWindow.show()
@@ -62,7 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.session = s
                 s.begin()
             } catch {
-                NSLog("Lark Screenshot capture failed: \(error)")
+                NSLog("Snip capture failed: \(error)")
             }
         }
     }
@@ -77,7 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 try SMAppService.mainApp.register()
             }
         } catch {
-            NSLog("Lark Screenshot login item error: \(error)")
+            NSLog("Snip login item error: \(error)")
         }
         item.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }
