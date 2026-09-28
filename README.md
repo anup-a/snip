@@ -14,6 +14,7 @@
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white">
   <img alt="No network" src="https://img.shields.io/badge/network-none-2ea44f">
   <img alt="Sandboxed" src="https://img.shields.io/badge/App%20Sandbox-on-0a84ff">
+  <a href="https://github.com/anup-a/snip/releases/latest"><img alt="Download" src="https://img.shields.io/github/v/release/anup-a/snip?label=download&color=0a84ff"></a>
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
@@ -81,6 +82,8 @@ Also included:
 | Double-click or <kbd>Esc</kbd> | Close |
 
 ## Install
+
+**Download:** grab **Snip-1.0.0.dmg** from the [latest release](https://github.com/anup-a/snip/releases/latest). It's a universal build (Apple silicon and Intel, macOS 14+), signed with Developer ID and notarized by Apple. Open it and drag Snip to Applications.
 
 **Mac App Store:** submitted as *Snip: Screenshot & Markup*. The link will be added here once it's approved.
 
