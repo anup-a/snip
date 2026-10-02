@@ -42,6 +42,8 @@ final class OverlayView: NSView, NSTextFieldDelegate {
 
     private var toolbar: ToolbarView!
     private var options: OptionsView!
+    /// How far the user has dragged the toolbar away from its default spot under the selection.
+    private var toolbarOffset = CGPoint.zero
 
     private var strokeWidth: CGFloat { [2, 4, 6][sizeLevel] }
     private var fontSize: CGFloat { [14, 18, 24][sizeLevel] }
@@ -70,7 +72,12 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
-        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .cursorUpdate, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    // AppKit resets the cursor on cursor-update events; answer with ours instead of the default arrow.
+    override func cursorUpdate(with event: NSEvent) {
+        updateCursor(point(event))
     }
 
     /// Picks up the cursor position before the first mouse move so the hover highlight shows immediately.
@@ -111,9 +118,9 @@ final class OverlayView: NSView, NSTextFieldDelegate {
             NSGraphicsContext.restoreGraphicsState()
         }
 
-        accentBlue.setStroke()
-        let border = NSBezierPath(rect: highlight.insetBy(dx: -1, dy: -1))
-        border.lineWidth = 2
+        selectionBlue.setStroke()
+        let border = NSBezierPath(rect: highlight.insetBy(dx: -0.75, dy: -0.75))
+        border.lineWidth = 1.5
         border.stroke()
 
         if phase == .selected { drawHandles(highlight) }
@@ -142,10 +149,18 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     }
 
     private func drawHandles(_ r: CGRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        // Corner handles sit on the border's outer edge, like Lark's.
+        let r = r.insetBy(dx: -0.75, dy: -0.75)
         for (_, _, p) in handlePoints(r) {
-            let box = CGRect(x: p.x - 3.5, y: p.y - 3.5, width: 7, height: 7)
-            NSBezierPath(rect: box).fill(.white)
-            NSBezierPath(rect: box.insetBy(dx: 1, dy: 1)).fill(accentBlue)
+            let dot = NSBezierPath(ovalIn: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
+            ctx.saveGState()
+            ctx.setShadow(offset: CGSize(width: 0, height: -0.5), blur: 2, color: NSColor.black.withAlphaComponent(0.35).cgColor)
+            dot.fill(.white)
+            ctx.restoreGState()
+            dot.lineWidth = 1
+            selectionBlue.setStroke()
+            dot.stroke()
         }
     }
 
@@ -153,16 +168,17 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         guard demoShowsSizeLabel else { return }
         let text = "\(Int(round(r.width * scale))) × \(Int(round(r.height * scale)))" as NSString
         let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium),
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium),
             .foregroundColor: NSColor.white,
         ]
         let size = text.size(withAttributes: attrs)
-        let box = CGSize(width: size.width + 12, height: size.height + 6)
+        let box = CGSize(width: ceil(size.width) + 12, height: ceil(size.height) + 6)
+        // Above the top-left corner, or tucked inside it when the selection touches the top of the screen.
         var origin = CGPoint(x: r.minX, y: r.maxY + 6)
         if origin.y + box.height > bounds.maxY { origin = CGPoint(x: r.minX + 6, y: r.maxY - box.height - 6) }
         origin.x = min(max(origin.x, bounds.minX + 2), bounds.maxX - box.width - 2)
-        NSBezierPath(roundedRect: CGRect(origin: origin, size: box), xRadius: 4, yRadius: 4)
-            .fill(NSColor.black.withAlphaComponent(0.72))
+        NSBezierPath(roundedRect: CGRect(origin: origin, size: box), xRadius: 3, yRadius: 3)
+            .fill(NSColor(white: 0.1, alpha: 0.78))
         text.draw(at: CGPoint(x: origin.x + 6, y: origin.y + 3), withAttributes: attrs)
     }
 
@@ -254,7 +270,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     }
 
     private func handle(at p: CGPoint, in r: CGRect) -> (Int, Int)? {
-        for (hx, hy, h) in handlePoints(r) where abs(h.x - p.x) <= 6 && abs(h.y - p.y) <= 6 {
+        for (hx, hy, h) in handlePoints(r) where abs(h.x - p.x) <= 7 && abs(h.y - p.y) <= 7 {
             return (hx, hy)
         }
         return nil
@@ -286,7 +302,18 @@ final class OverlayView: NSView, NSTextFieldDelegate {
     }
 
     private func updateCursor(_ p: CGPoint) {
+        // Mid-drag the cursor follows the gesture, not whatever is under the pointer.
+        switch drag {
+        case let .resize(hx, hy, _, _): resizeCursor(hx, hy).set(); return
+        case .move: NSCursor.closedHand.set(); return
+        case .create: NSCursor.crosshair.set(); return
+        default: break
+        }
         guard phase == .selected, let sel = selection else { NSCursor.crosshair.set(); return }
+        if !toolbar.isHidden && toolbar.frame.contains(p) || !options.isHidden && options.frame.contains(p) {
+            (toolbar.isOverGrip(convert(p, to: toolbar)) ? NSCursor.openHand : NSCursor.arrow).set()
+            return
+        }
         if let (hx, hy) = handle(at: p, in: sel) {
             resizeCursor(hx, hy).set()
         } else if sel.contains(p) {
@@ -337,6 +364,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
             }
             if let (hx, hy) = handle(at: p, in: sel) {
                 drag = .resize(hx, hy, sel, p)
+                resizeCursor(hx, hy).set()
             } else if let tool, sel.contains(p) {
                 switch tool {
                 case .text:
@@ -385,6 +413,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
                 current = shape(tool, from: start, to: p, constrained: event.modifierFlags.contains(.shift))
             }
         }
+        updateCursor(p)
         layoutToolbar()
         needsDisplay = true
     }
@@ -424,6 +453,7 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         textField?.removeFromSuperview()
         textField = nil
         drag = .none
+        toolbarOffset = .zero
         selection = nil
         annotations.removeAll()
         current = nil
@@ -580,10 +610,19 @@ final class OverlayView: NSView, NSTextFieldDelegate {
             top = sel.maxY + 8 + block
             if top > bounds.maxY - 4 { top = max(sel.minY, bounds.minY) + 8 + block }
         }
-        var x = sel.maxX - tb.width
+        top += toolbarOffset.y
+        top = min(max(top, bounds.minY + 4 + block), bounds.maxY - 4)
+        var x = sel.maxX - tb.width + toolbarOffset.x
         x = min(max(x, bounds.minX + 4), bounds.maxX - tb.width - 4)
         toolbar.frame = CGRect(x: x, y: top - tb.height, width: tb.width, height: tb.height)
         options.frame = CGRect(x: x, y: top - tb.height - 6 - op.height, width: op.width, height: op.height)
+    }
+
+    /// Called by the toolbar's grip while the user drags the bar somewhere else.
+    func moveToolbar(by delta: CGPoint) {
+        toolbarOffset.x += delta.x
+        toolbarOffset.y += delta.y
+        layoutToolbar()
     }
 
     func toggleTool(_ t: Tool) {

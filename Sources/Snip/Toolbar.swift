@@ -83,6 +83,46 @@ private func separator() -> NSView {
     return view
 }
 
+/// Six-dot handle at the toolbar's leading edge; dragging it moves the bar.
+private final class GripView: NSView {
+    var onDrag: ((CGPoint) -> Void)?
+    private var last: CGPoint?
+
+    override var intrinsicContentSize: NSSize { NSSize(width: 14, height: 30) }
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let dot: CGFloat = 2.5
+        for col in 0..<2 {
+            for row in 0..<3 {
+                let x = bounds.midX - 3 + CGFloat(col) * 4 - dot / 2
+                let y = bounds.midY - 5 + CGFloat(row) * 5 - dot / 2
+                NSBezierPath(ovalIn: CGRect(x: x, y: y, width: dot, height: dot)).fill(NSColor(white: 0.7, alpha: 1))
+            }
+        }
+    }
+
+    override func resetCursorRects() { addCursorRect(bounds, cursor: .openHand) }
+
+    override func mouseDown(with event: NSEvent) {
+        last = event.locationInWindow
+        NSCursor.closedHand.set()
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let last else { return }
+        let p = event.locationInWindow
+        self.last = p
+        onDrag?(CGPoint(x: p.x - last.x, y: p.y - last.y))
+        NSCursor.closedHand.set()
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        last = nil
+        NSCursor.openHand.set()
+    }
+}
+
 class FloatingBar: NSView {
     let stack = NSStackView()
 
@@ -111,7 +151,7 @@ class FloatingBar: NSView {
 
     // Drawn rather than layer-styled so offscreen renders (cacheDisplay) include it.
     override func draw(_ dirtyRect: NSRect) {
-        NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill(.white)
+        NSBezierPath(roundedRect: bounds, xRadius: 8, yRadius: 8).fill(.white)
     }
 
     override func mouseDown(with event: NSEvent) {} // don't leak clicks to the overlay
@@ -120,27 +160,37 @@ class FloatingBar: NSView {
 final class ToolbarView: FloatingBar {
     private weak var overlay: OverlayView?
     private var toolButtons: [(Tool, IconButton)] = []
+    private let grip = GripView()
 
     init(overlay: OverlayView) {
         self.overlay = overlay
         super.init(frame: .zero)
+        stack.edgeInsets.left = 2
+        grip.onDrag = { [weak self] delta in self?.overlay?.moveToolbar(by: delta) }
+        grip.translatesAutoresizingMaskIntoConstraints = false
+        grip.widthAnchor.constraint(equalToConstant: 14).isActive = true
+        grip.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        stack.addArrangedSubview(grip)
+        // Same order as Lark: annotation tools, then pin/OCR, then undo/save, then cancel/confirm.
         for tool in Tool.allCases {
             let button = IconButton(symbol: tool.symbol, tip: tool.tip) { [weak self] in self?.overlay?.toggleTool(tool) }
             toolButtons.append((tool, button))
             stack.addArrangedSubview(button)
         }
         stack.addArrangedSubview(separator())
-        stack.addArrangedSubview(IconButton(symbol: "arrow.uturn.backward", tip: "Undo (⌘Z)") { [weak self] in self?.overlay?.undo() })
-        stack.addArrangedSubview(separator())
-        stack.addArrangedSubview(IconButton(symbol: "text.viewfinder", tip: "Extract text") { [weak self] in self?.overlay?.recognizeText() })
         stack.addArrangedSubview(IconButton(symbol: "pin", tip: "Pin to screen") { [weak self] in self?.overlay?.pin() })
+        stack.addArrangedSubview(IconButton(symbol: "text.viewfinder", tip: "Extract text") { [weak self] in self?.overlay?.recognizeText() })
+        stack.addArrangedSubview(separator())
+        stack.addArrangedSubview(IconButton(symbol: "arrow.uturn.backward", tip: "Undo (⌘Z)") { [weak self] in self?.overlay?.undo() })
         stack.addArrangedSubview(IconButton(symbol: "square.and.arrow.down", tip: "Save (⌘S)") { [weak self] in self?.overlay?.save() })
         stack.addArrangedSubview(separator())
-        stack.addArrangedSubview(IconButton(symbol: "xmark", tip: "Cancel (Esc)") { [weak self] in self?.overlay?.cancel() })
-        stack.addArrangedSubview(IconButton(symbol: "checkmark", tip: "Copy (Enter)", tint: accentBlue) { [weak self] in self?.overlay?.done() })
+        stack.addArrangedSubview(IconButton(symbol: "xmark", tip: "Cancel (Esc)", tint: cancelRed) { [weak self] in self?.overlay?.cancel() })
+        stack.addArrangedSubview(IconButton(symbol: "checkmark", tip: "Copy (Enter)", tint: confirmGreen) { [weak self] in self?.overlay?.done() })
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    func isOverGrip(_ p: CGPoint) -> Bool { grip.frame.contains(convert(p, to: grip.superview)) }
 
     func refresh() {
         for (tool, button) in toolButtons { button.isActive = overlay?.tool == tool }

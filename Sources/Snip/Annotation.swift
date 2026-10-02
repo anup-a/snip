@@ -1,6 +1,10 @@
 import AppKit
 
 let accentBlue = NSColor(srgbRed: 0x33 / 255, green: 0x70 / 255, blue: 0xFF / 255, alpha: 1)
+/// The lighter blue Lark uses for the capture rectangle and its handles.
+let selectionBlue = NSColor(srgbRed: 0x4C / 255, green: 0xA4 / 255, blue: 0xFF / 255, alpha: 1)
+let cancelRed = NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1)
+let confirmGreen = NSColor(srgbRed: 0x2E / 255, green: 0xB8 / 255, blue: 0x5C / 255, alpha: 1)
 
 let palette: [NSColor] = [
     NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1), // red
@@ -12,7 +16,7 @@ let palette: [NSColor] = [
 ]
 
 enum Tool: CaseIterable {
-    case rect, ellipse, arrow, pen, mosaic, text, marker
+    case rect, ellipse, arrow, pen, text, marker, mosaic
 
     var symbol: String {
         switch self {
