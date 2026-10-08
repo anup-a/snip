@@ -1,0 +1,43 @@
+/* README illustrations: extends the App Store system in ../html/shared.css. */
+.shot { --a: #3370ff; --a2: #8fb4ff; --a3: #7a5cf0; }
+h1 { font-size: 68px; }
+.sub { font-size: 22px; }
+.mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+
+/* Terminal card: where the agent works. */
+.term {
+  position: absolute; border-radius: 14px; overflow: hidden; background: #0e1018;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 40px 90px -10px rgba(0,0,0,.7), 0 12px 30px rgba(0,0,0,.35);
+}
+.term .tb { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 13px; background: #171a24; border-bottom: 1px solid rgba(255,255,255,.07); }
+.term .tb i { width: 11px; height: 11px; border-radius: 6px; display: block; }
+.term .tb span { margin-left: 10px; font-size: 12.5px; color: rgba(255,255,255,.45); font-weight: 600; }
+.term pre { margin: 0; padding: 16px 18px; font: 15px/1.62 "SF Mono", ui-monospace, Menlo, monospace; color: #d8dcf0; white-space: pre; }
+.term .p { color: #6f7bff; }
+.term .c { color: #fff; font-weight: 600; }
+.term .f { color: #8fb4ff; }
+.term .s { color: #ffc26b; }
+.term .o { color: rgba(216,220,240,.5); }
+.term .ok { color: #5fd38d; }
+
+/* A pinned snip: Snip's thin blue border plus a floating shadow. */
+.pinned {
+  position: absolute; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 0 1.5px rgba(51,112,255,.75), 0 50px 110px -20px rgba(0,0,0,.75), 0 18px 40px rgba(0,0,0,.4);
+}
+.pinned img { display: block; width: 100%; height: 100%; }
+
+/* Live region chrome, as the app draws it. */
+.live { position: absolute; box-shadow: 0 0 0 2px var(--edge, #4ca4ff), 0 0 0 4000px rgba(0,0,0,.45); }
+.bar {
+  position: absolute; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 6px 0 12px; border-radius: 9px;
+  background: #fff; color: #333; font: 500 14px -apple-system, system-ui; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
+.bar .t { font-variant-numeric: tabular-nums; margin-right: 6px; }
+.bar b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; }
+.bar b svg { width: 17px; height: 17px; }
+.bar b.hover { background: rgba(0,0,0,.06); }
+
+/* Small caption above a panel. */
+.cap { position: absolute; font-size: 15px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.cap b { color: var(--a2); }

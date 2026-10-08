@@ -154,6 +154,7 @@ enum Commands {
         var args = ArgReader(argv)
         let json = args.flag("--json")
         let outPath = try args.value("-o", "--out")
+        let forcedScale = try args.value("--scale").map { CGFloat(try numbers($0, count: 1, what: "--scale")[0]) }
         // Marks are read in order, so --color affects only the marks after it.
         var marks: [(String, String)] = []
         var remaining: [String] = []
@@ -175,7 +176,8 @@ enum Commands {
         try args.finish()
         guard !marks.filter({ $0.0 != "--color" }).isEmpty else { throw CLIError("no marks given (try --box, --arrow, --step, --text, --blur)") }
 
-        let (image, scale) = try ImageFile.read(input)
+        var (image, scale) = try ImageFile.read(input)
+        if let forced = forcedScale { scale = forced }
         let out: URL
         if let outPath {
             out = outputURL(outPath, ext: "png", prefix: "mark")

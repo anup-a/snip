@@ -1,0 +1,333 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../html/shared.css"><link rel="stylesheet" href="readme.css">
+<style>
+  /* 1600x900 stage, rendered frame by frame by motion.mjs. render(t) sets every frame from the time alone. */
+  html, body { width: 1600px; height: 900px; }
+  .shot { width: 1600px; height: 900px; }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .caption { position: absolute; top: 58px; left: 0; right: 0; text-align: center; font-size: 46px; font-weight: 720; letter-spacing: -.035em; }
+  .caption .kc { font-size: 26px; height: 40px; min-width: 42px; vertical-align: 6px; }
+  .caption .hl { background: linear-gradient(100deg, #fff 0%, var(--a2) 45%, var(--a) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* A macOS screen at 1440x900 points, scaled into a bezel. */
+  .display { left: 215px; top: 148px; }
+  .screen { position: relative; width: 1152px; height: 720px; overflow: hidden; border-radius: 15px; }
+  .pts { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; }
+  .pts > * { position: absolute; }
+  .full { left: 0; top: 0; width: 1440px; height: 900px; }
+  .dim { left: 0; top: 0; width: 1440px; height: 900px; overflow: hidden; }
+  .dim i { position: absolute; display: block; box-shadow: 0 0 0 4000px rgba(0,0,0,.45); outline: 1px solid #4ca4ff; }
+  .cursor { width: 22px; height: 30px; z-index: 10; }
+
+  .keys.big { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 30; }
+
+  .region { overflow: hidden; background: #fff; }
+  .region img { position: absolute; left: 0; top: 0; width: 808px; }
+  .region .head { position: absolute; left: 0; top: 0; width: 808px; height: 59px; overflow: hidden; }
+  .preview { background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.35); overflow: hidden; }
+  .preview div { position: absolute; top: 6px; overflow: hidden; }
+  .preview img { display: block; }
+  .bar { height: 36px; padding: 0 4px 0 10px; border-radius: 8px; font-size: 13px; }
+  .bar b { width: 28px; height: 28px; }
+
+  .term { left: 300px; top: 220px; width: 1000px; }
+  .term pre { font-size: 22px; line-height: 1.7; min-height: 400px; padding: 22px 26px; }
+  .term .caret { display: inline-block; width: 12px; height: 25px; background: #d8dcf0; vertical-align: -3px; }
+  #s5 .pinned { left: 820px; top: 250px; width: 720px; height: 480px; }
+
+  .toast { position: absolute; left: 50%; top: 820px; transform: translateX(-50%); }
+  #s6 h1 { font-size: 84px; margin-top: 26px; }
+  #s6 header { top: 300px; }
+  #s6 .url { margin-top: 30px; font: 600 26px "SF Mono", ui-monospace, Menlo, monospace; color: var(--a2); }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+
+  <!-- 1. Title -->
+  <section class="scene" id="s1">
+    <header style="top:300px">
+      <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+      <h1 style="font-size:88px">Screenshots for you<br><span class="hl">and your agent</span></h1>
+    </header>
+  </section>
+
+  <!-- 2. Human: ⌘⇧A, select, mark up -->
+  <section class="scene" id="s2">
+    <div class="caption">Press <span class="kc">⌘</span><span class="kc">⇧</span><span class="kc">A</span> Select, <span class="hl">mark up</span>, done.</div>
+    <div class="display"><div class="screen"><div class="pts">
+      <img class="full" src="../html/scenes/dash.png" alt="">
+      <img class="full" id="hover" src="raw/dash-hover.png" alt="">
+      <div class="dim" id="drag"><i></i></div>
+      <img class="full" id="select" src="raw/dash-select.png" alt="">
+      <img class="full mark" data-clip="950,384,84,196" data-mode="down" src="raw/dash-annotate.png" alt="">
+      <img class="full mark" data-clip="1010,376,34,34" data-mode="pop" src="raw/dash-annotate.png" alt="">
+      <img class="full mark" data-clip="800,380,156,38" data-mode="right" src="raw/dash-annotate.png" alt="">
+      <img class="full mark" data-clip="752,488,202,142" data-mode="arrow" src="raw/dash-annotate.png" alt="">
+      <img class="full mark" data-clip="892,264,130,46" data-mode="right" src="raw/dash-annotate.png" alt="">
+      <img class="full mark" data-clip="1018,271,34,34" data-mode="pop" src="raw/dash-annotate.png" alt="">
+      <svg class="cursor" id="c2" viewBox="0 0 22 30"><path d="M2 2v22l6-6 4 9 4-2-4-8.5h8.5z" fill="#000" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div></div></div>
+    <div class="keys big" id="keys">
+      <div class="key"><span class="g">⌘</span><span class="n">command</span></div>
+      <div class="key"><span class="g">⇧</span><span class="n">shift</span></div>
+      <div class="key letter"><span class="g">A</span></div>
+    </div>
+    <div class="tag toast" id="copied">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 5.5"/></svg>
+      Copied. Paste it anywhere.
+    </div>
+  </section>
+
+  <!-- 3. Scrolling screenshot -->
+  <section class="scene" id="s3">
+    <div class="caption">Scroll once, get <span class="hl">the whole page</span></div>
+    <div class="display"><div class="screen"><div class="pts">
+      <img class="full" src="../html/scenes/chat.png" alt="">
+      <div class="dim"><i style="left:341px; top:125px; width:808px; height:643px"></i></div>
+      <div class="region" style="left:341px; top:125px; width:808px; height:643px">
+        <img id="strip" src="assets/scroll-stitched.png" alt="">
+        <div class="head"><img src="assets/scroll-stitched.png" alt=""></div>
+      </div>
+      <div class="preview" style="left:1161px; top:125px; width:150px; height:643px"><div id="thumb"><img src="assets/scroll-stitched.png" alt=""></div></div>
+      <div class="bar" style="right:291px; top:776px">
+        <span class="t" id="size">Scroll slowly to capture</span>
+        <b><svg viewBox="0 0 20 20" fill="none" stroke="#f54a45" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></b>
+        <b><svg viewBox="0 0 20 20" fill="none" stroke="#2eb85c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 5.5"/></svg></b>
+      </div>
+      <svg class="cursor" id="c3" viewBox="0 0 22 30"><path d="M2 2v22l6-6 4 9 4-2-4-8.5h8.5z" fill="#000" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div></div></div>
+  </section>
+
+  <!-- 4. Recording -->
+  <section class="scene" id="s4">
+    <div class="caption">Record the flow <span class="hl">as an MP4</span></div>
+    <div class="display"><div class="screen"><div class="pts">
+      <img class="full" src="../html/scenes/dash.png" alt="">
+      <div class="dim"><i style="left:330px; top:190px; width:840px; height:400px; outline-color:#f54a45; outline-width:2px"></i></div>
+      <div class="bar" style="right:270px; top:598px">
+        <b style="width:22px"><svg id="dot" viewBox="0 0 20 20" fill="none" stroke="#f54a45" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="4" fill="#f54a45" stroke="none"/></svg></b>
+        <span class="t" id="clock">00:00</span>
+        <b><svg viewBox="0 0 20 20" fill="#333"><rect x="5" y="4" width="3.4" height="12" rx="1"/><rect x="11.6" y="4" width="3.4" height="12" rx="1"/></svg></b>
+        <b><svg viewBox="0 0 20 20" fill="#f54a45"><rect x="4.5" y="4.5" width="11" height="11" rx="2"/></svg></b>
+        <b><svg viewBox="0 0 20 20" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></b>
+      </div>
+      <svg class="cursor" id="c4" viewBox="0 0 22 30"><path d="M2 2v22l6-6 4 9 4-2-4-8.5h8.5z" fill="#000" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div></div></div>
+  </section>
+
+  <!-- 5. Agent -->
+  <section class="scene" id="s5">
+    <div class="caption">Your agent does it too, <span class="hl">with snip</span></div>
+    <div class="term">
+      <div class="tb"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>agent</span></div>
+      <pre id="tty"></pre>
+    </div>
+    <div class="pinned"><img src="assets/agent-marked.png" alt=""></div>
+  </section>
+
+  <!-- 6. End card -->
+  <section class="scene" id="s6">
+    <header>
+      <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+      <h1><span class="kc" style="font-size:52px;height:76px;min-width:76px;vertical-align:10px">⌘⇧A</span> for you.<br><span class="hl">snip for your agent.</span></h1>
+      <div class="url">github.com/anup-a/snip</div>
+    </header>
+  </section>
+</div>
+<script>
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const out3 = (x) => 1 - Math.pow(1 - x, 3);
+const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+const $ = (s) => document.querySelector(s);
+
+// Scene windows [start, end]; each fades in over 0.4s and out over 0.4s, back to back so two screens never mix.
+const SCENES = { s1: [0, 2.6], s2: [2.6, 8.6], s3: [8.6, 13.4], s4: [13.4, 16.8], s5: [16.8, 24.0], s6: [24.0, 27.5] };
+window.DURATION = 27.5;
+
+function sceneFrame(id, t) {
+  const [a, b] = SCENES[id];
+  const el = document.getElementById(id);
+  const fade = id === 's6' ? prog(t, a, a + 0.5) : Math.min(prog(t, a, a + 0.4), 1 - prog(t, b - 0.4, b));
+  el.style.opacity = fade;
+  el.style.visibility = fade > 0 ? 'visible' : 'hidden';
+  const enter = out3(prog(t, a, a + 0.6));
+  el.style.transform = `translateY(${(1 - enter) * 18}px) scale(${lerp(0.985, 1, enter)})`;
+  return t - a;
+}
+
+// Push the camera in on (fx, fy) in screen points: zoom z, m = how far along (0..1). Never shows past the screen edge.
+const S = 0.8, W = 1152, H = 720;
+function camera(id, fx, fy, z, m) {
+  const k = S * lerp(1, z, m);
+  let tx = lerp(S * fx, W / 2, m) - k * fx;
+  let ty = lerp(S * fy, H / 2, m) - k * fy;
+  tx = clamp(tx, W - k * 1440, 0);
+  ty = clamp(ty, H - k * 900, 0);
+  document.querySelector(`#${id} .pts`).style.transform = `translate(${tx}px, ${ty}px) scale(${k})`;
+}
+
+function cursor(el, x, y, show = 1) {
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.opacity = show;
+}
+
+// 2. Human
+const SEL = [308, 124, 868, 548];
+function human(u) {
+  camera('s2', 742, 437, 1.28, inOut(prog(u, 2.5, 3.3)));
+  const keys = $('#keys');
+  const kIn = back(prog(u, 0.5, 0.9));
+  const kOut = prog(u, 1.4, 1.7);
+  keys.style.opacity = prog(u, 0.5, 0.7) * (1 - kOut);
+  keys.style.transform = `translate(-50%, -50%) scale(${lerp(0.8, 1, kIn) * lerp(1, 0.9, kOut)})`;
+  // The keys press down together at 1.05s.
+  const press = prog(u, 1.0, 1.08) * (1 - prog(u, 1.15, 1.25));
+  keys.querySelectorAll('.key').forEach((k) => (k.style.transform = `translateY(${press * 5}px)`));
+
+  $('#hover').style.opacity = prog(u, 1.15, 1.35) * (1 - prog(u, 1.75, 1.8));
+  const drag = $('#drag');
+  const d = inOut(prog(u, 1.8, 2.6));
+  const [x, y, w, h] = SEL;
+  drag.style.opacity = u >= 1.75 && u < 2.75 ? 1 : 0;
+  Object.assign(drag.firstElementChild.style, { left: x + 'px', top: y + 'px', width: Math.max(1, w * d) + 'px', height: Math.max(1, h * d) + 'px' });
+  $('#select').style.opacity = prog(u, 2.6, 2.75) * (1 - prog(u, 5.75, 6.0));
+
+  // Marks appear one after another.
+  const marks = document.querySelectorAll('#s2 .mark');
+  const starts = [3.0, 3.35, 3.55, 3.95, 4.55, 4.85];
+  marks.forEach((m, i) => {
+    const [cx, cy, cw, ch] = m.dataset.clip.split(',').map(Number);
+    const p = out3(prog(u, starts[i], starts[i] + 0.35));
+    const off = 1 - prog(u, 5.75, 6.0);
+    let clip;
+    if (m.dataset.mode === 'down') clip = `inset(${cy}px ${1440 - cx - cw}px ${900 - cy - ch * p}px ${cx}px)`;
+    else if (m.dataset.mode === 'right') clip = `inset(${cy}px ${1440 - cx - cw * p}px ${900 - cy - ch}px ${cx}px)`;
+    else if (m.dataset.mode === 'arrow') clip = `inset(${cy + ch * (1 - p)}px ${1440 - cx - cw * p}px ${900 - cy - ch}px ${cx}px)`;
+    else clip = `inset(${cy}px ${1440 - cx - cw}px ${900 - cy - ch}px ${cx}px)`;
+    m.style.clipPath = clip;
+    m.style.opacity = (m.dataset.mode === 'pop' ? p : p > 0 ? 1 : 0) * off;
+    if (m.dataset.mode === 'pop') {
+      m.style.transformOrigin = `${cx + cw / 2}px ${cy + ch / 2}px`;
+      m.style.transform = `scale(${lerp(0.4, 1, back(prog(u, starts[i], starts[i] + 0.3)))})`;
+    }
+  });
+
+  // Cursor: follows the drag, then draws, then clicks the checkmark.
+  const c = $('#c2');
+  const path = [
+    [1.2, 980, 520], [1.8, x, y], [2.6, x + w, y + h], [2.95, 1000, 470], [3.5, 960, 560], [3.95, 760, 622],
+    [4.3, 944, 500], [4.6, 900, 300], [5.2, 1150, 695], [6.0, 1150, 695],
+  ];
+  let px = path[0][1], py = path[0][2];
+  for (let i = 1; i < path.length; i++) {
+    const [t0, x0, y0] = path[i - 1];
+    const [t1, x1, y1] = path[i];
+    if (u >= t0) {
+      const e = inOut(prog(u, t0, t1));
+      px = lerp(x0, x1, e);
+      py = lerp(y0, y1, e);
+    }
+  }
+  cursor(c, px, py, u > 1.7 ? 1 - prog(u, 5.75, 6.0) : 0);
+  const click = prog(u, 5.3, 5.38) * (1 - prog(u, 5.4, 5.5));
+  c.style.transform = `scale(${1 - click * 0.15})`;
+
+  const copied = $('#copied');
+  copied.style.opacity = prog(u, 5.75, 5.95);
+  copied.style.transform = `translateX(-50%) translateY(${(1 - out3(prog(u, 5.75, 6.1))) * 14}px)`;
+}
+
+// 3. Scrolling: the region shows the real stitched page, scrolling; the preview grows with it.
+const K = 808 / 1280; // points per strip pixel
+const STRIP = 6122;
+function scroll(v) {
+  camera('s3', 826, 468, 1.14, inOut(prog(v, 0.2, 0.9)));
+  const total = STRIP * K - 643;
+  const s = total * inOut(prog(v, 0.9, 4.1));
+  $('#strip').style.transform = `translateY(${-s}px)`;
+  const headImg = $('#s3 .head img');
+  headImg.style.width = '808px';
+  const capturedPx = Math.min(STRIP, (643 + s) / K);
+  const scale = Math.min(138 / 1280, 631 / capturedPx);
+  const thumb = $('#thumb');
+  thumb.style.width = 1280 * scale + 'px';
+  thumb.style.height = capturedPx * scale + 'px';
+  thumb.style.left = (150 - 1280 * scale) / 2 + 'px';
+  thumb.firstElementChild.style.width = 1280 * scale + 'px';
+  $('#s3 .preview').style.opacity = prog(v, 0.9, 1.1);
+  $('#size').textContent = v < 0.9 ? 'Scroll slowly to capture' : `1280 × ${Math.round(capturedPx)}`;
+  // Two-finger scroll: the pointer rests in the page and nudges with each swipe.
+  cursor($('#c3'), 760, 470 + Math.sin(v * 9) * 3 * prog(v, 0.9, 1.2) * (1 - prog(v, 4.0, 4.2)));
+}
+
+// 4. Recording: the clock runs, the dot blinks, the pointer explores the chart.
+function record(w) {
+  camera('s4', 750, 412, 1.3, inOut(prog(w, 0.1, 0.9)));
+  const secs = Math.max(0, Math.floor(w - 0.2));
+  $('#clock').textContent = '00:' + String(Math.min(59, secs)).padStart(2, '0');
+  $('#dot').style.opacity = Math.floor(w * 2) % 2 ? 0.35 : 1;
+  const e = inOut(prog(w, 0.4, 2.6));
+  cursor($('#c4'), lerp(520, 1010, e), lerp(520, 430, e) + Math.sin(e * Math.PI) * -40);
+}
+
+// 5. Agent: type the commands, then the marked screenshot pops onto the screen.
+const LINES = [
+  { cmd: '<span class="c">snip shot</span> <span class="f">--app</span> <span class="s">Analytics</span> <span class="f">-o</span> shot.png', out: '<span class="o">/tmp/shot.png</span>' },
+  { cmd: '<span class="c">snip ocr</span> shot.png <span class="f">--json</span> <span class="o">| grep Churn</span>', out: '<span class="o">{"text":"Churn","box":[1601,320,72,22]}</span>' },
+  { cmd: '<span class="c">snip mark</span> shot.png <span class="f">--box</span> 1556,276,556,214 <span class="f">--text</span> …', out: '<span class="o">/tmp/shot.marked.png</span>' },
+  { cmd: '<span class="c">snip pin</span> shot.marked.png', out: '<span class="o">/tmp/shot.marked.png</span>' },
+];
+// Types `html` up to n visible characters, keeping tags whole.
+function typed(html, n) {
+  let out = '', seen = 0;
+  for (let i = 0; i < html.length && seen < n; i++) {
+    if (html[i] === '<') { const j = html.indexOf('>', i); out += html.slice(i, j + 1); i = j; continue; }
+    if (html[i] === '&') { const j = html.indexOf(';', i); out += html.slice(i, j + 1); i = j; seen++; continue; }
+    out += html[i]; seen++;
+  }
+  // Close any open spans.
+  const open = (out.match(/<span/g) || []).length - (out.match(/<\/span>/g) || []).length;
+  return out + '</span>'.repeat(Math.max(0, open));
+}
+const visibleLength = (html) => html.replace(/<[^>]+>/g, '').replace(/&[^;]+;/g, 'x').length;
+const CPS = 60;
+// When each line starts typing, and when the pin lands.
+const SCHEDULE = (() => {
+  let t = 0.5;
+  const starts = LINES.map((l) => { const s = t; t += visibleLength(l.cmd) / CPS + 0.25 + 0.45; return s; });
+  return { starts, pin: t - 0.2 };
+})();
+function agent(a) {
+  let html = '';
+  LINES.forEach((line, i) => {
+    const t = SCHEDULE.starts[i];
+    if (a < t) return;
+    const done = t + visibleLength(line.cmd) / CPS;
+    html += '<span class="p">$</span> ' + typed(line.cmd, Math.floor((a - t) * CPS));
+    if (a < done + 0.25) html += '<span class="caret"></span>';
+    else html += '\n' + line.out + '\n';
+  });
+  $('#tty').innerHTML = html;
+  // The terminal steps aside and the marked screenshot pops onto the screen.
+  const p = prog(a, SCHEDULE.pin, SCHEDULE.pin + 0.5);
+  $('#s5 .term').style.transform = `translateX(${-210 * inOut(prog(a, SCHEDULE.pin - 0.1, SCHEDULE.pin + 0.5))}px)`;
+  const pin = $('#s5 .pinned');
+  pin.style.opacity = prog(a, SCHEDULE.pin, SCHEDULE.pin + 0.15);
+  pin.style.transform = `scale(${lerp(0.82, 1, back(p))}) rotate(${lerp(-2, 0, out3(p))}deg)`;
+}
+
+window.render = (t) => {
+  sceneFrame('s1', t);
+  human(sceneFrame('s2', t));
+  scroll(sceneFrame('s3', t));
+  record(sceneFrame('s4', t));
+  agent(sceneFrame('s5', t));
+  sceneFrame('s6', t);
+};
+window.render(Number(new URLSearchParams(location.search).get('t') || 0));
+</script>
+</body></html>

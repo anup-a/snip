@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../html/shared.css"><link rel="stylesheet" href="readme.css">
+<style>
+  #you { left: 54px; top: 318px; }
+  .cap.you { left: 66px; top: 286px; }
+  .cap.agent { left: 832px; top: 286px; }
+  .term { left: 820px; top: 318px; width: 566px; }
+  #pin { left: 896px; top: 552px; width: 462px; height: 308px; }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Screenshots for you <span class="hl">and your agent</span></h1>
+    <p class="sub">Press <b>⌘⇧A</b> to grab, mark up and pin. Your agent runs <b>snip</b> to do the same.</p>
+  </header>
+
+  <div class="cap you"><b>You</b> &nbsp;⌘⇧A</div>
+  <div class="display" id="you">
+    <div class="crop" data-src="raw/dash-annotate.png" data-rect="280,100,930,620" data-scale="0.76"></div>
+  </div>
+
+  <div class="cap agent"><b>Your agent</b> &nbsp;snip</div>
+  <div class="term">
+    <div class="tb"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>agent</span></div>
+<pre><span class="p">$</span> <span class="c">snip shot</span> <span class="f">--app</span> <span class="s">Analytics</span> <span class="f">-o</span> shot.png
+<span class="o">/tmp/shot.png</span>
+<span class="p">$</span> <span class="c">snip ocr</span> shot.png <span class="f">--json</span> <span class="o">| grep Churn</span>
+<span class="o">{"text":"Churn","box":[1601,320,72,22]}</span>
+<span class="p">$</span> <span class="c">snip mark</span> shot.png <span class="f">--box</span> 1556,276,556,214 <span class="f">--step</span> …
+<span class="p">$</span> <span class="c">snip pin</span> shot.marked.png <span class="ok">✓</span></pre>
+  </div>
+  <div class="pinned" id="pin"><img src="assets/agent-marked.png" alt=""></div>
+  <div class="grain"></div>
+</div>
+<script src="../html/shared.js"></script>
+</body></html>

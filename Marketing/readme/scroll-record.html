@@ -1,0 +1,75 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../html/shared.css"><link rel="stylesheet" href="readme.css">
+<style>
+  .display { top: 318px; }
+  #scroll { left: 54px; }
+  #record { left: 740px; }
+  .cap.l { left: 66px; top: 286px; }
+  .cap.r { left: 752px; top: 286px; }
+  /* Live chrome in scene points, laid over the crop (see the script at the end). */
+  .layer { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; }
+  .preview { position: absolute; background: #fff; border-radius: 8px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.35); overflow: hidden; }
+  .preview div { width: 138px; overflow: hidden; }
+  .preview img { display: block; width: 138px; }
+  .bar { height: 36px; padding: 0 4px 0 10px; border-radius: 8px; font-size: 13px; }
+  .bar b { width: 28px; height: 28px; }
+  .tag { position: absolute; }
+</style></head><body>
+<div class="shot">
+  <div class="bg"></div><div class="grid"></div>
+  <header>
+    <div class="brand"><img src="../../Icons/renders/2-scissors.png" alt="">Snip</div>
+    <h1>Scroll it. <span class="hl">Record it.</span></h1>
+    <p class="sub">Capture a whole scrolling window as one image, or record the flow as an MP4.</p>
+  </header>
+
+  <div class="cap l"><b>Scrolling screenshot</b></div>
+  <div class="display" id="scroll">
+    <div class="crop" data-src="../html/scenes/chat.png" data-rect="150,60,1180,787" data-scale="0.5424">
+      <div class="layer" data-from="150,60,0.5424">
+        <div class="live" style="left:341px; top:125px; width:808px; height:643px; --edge:#4ca4ff"></div>
+        <div class="preview" style="left:1161px; top:125px; width:150px; height:643px"><div style="height:582px"><img src="assets/scroll-stitched.png" alt=""></div></div>
+        <div class="bar" style="right:291px; top:776px">
+          <span class="t">1280 × 5400</span>
+          <b><svg viewBox="0 0 20 20" fill="none" stroke="#f54a45" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></b>
+          <b><svg viewBox="0 0 20 20" fill="none" stroke="#2eb85c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 5.5"/></svg></b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cap r"><b>Screen recording</b></div>
+  <div class="display" id="record">
+    <div class="crop" data-src="../html/scenes/dash.png" data-rect="300,100,880,587" data-scale="0.7273">
+      <div class="layer" data-from="300,100,0.7273">
+        <div class="live" style="left:330px; top:190px; width:840px; height:400px; --edge:#f54a45"></div>
+        <div class="bar" style="right:270px; top:598px">
+          <b style="width:22px"><svg viewBox="0 0 20 20" fill="none" stroke="#f54a45" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="4" fill="#f54a45" stroke="none"/></svg></b>
+          <span class="t">00:12</span>
+          <b><svg viewBox="0 0 20 20" fill="#333"><rect x="5" y="4" width="3.4" height="12" rx="1"/><rect x="11.6" y="4" width="3.4" height="12" rx="1"/></svg></b>
+          <b><svg viewBox="0 0 20 20" fill="#f54a45"><rect x="4.5" y="4.5" width="11" height="11" rx="2"/></svg></b>
+          <b><svg viewBox="0 0 20 20" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tag" style="left:150px; top:802px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14M6 13l4 4 4-4M4 3h12"/></svg>
+    Stitches as you scroll
+  </div>
+  <div class="tag glass" style="left:880px; top:802px">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="10" height="10" rx="2"/><path d="M13 8.5 17 6v8l-4-2.5"/></svg>
+    Pause, resume, stop with ⌘⇧A
+  </div>
+  <div class="grain"></div>
+</div>
+<script src="../html/shared.js"></script>
+<script>
+  document.querySelectorAll('.layer').forEach((el) => {
+    const [x, y, s] = el.dataset.from.split(',').map(Number);
+    el.style.transform = `scale(${s}) translate(${-x}px, ${-y}px)`;
+  });
+  // shared.js prepends the scene image, so the layer is already above it.
+</script>
+</body></html>

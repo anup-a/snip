@@ -168,7 +168,8 @@ enum ImageFile {
               let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
         else { throw CLIError("can't read image \(path)") }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-        let dpi = (props?[kCGImagePropertyDPIWidth] as? Double) ?? 72
-        return (image, max(1, CGFloat(dpi / 72).rounded()))
+        // Retina screenshots say 144 dpi. Many tools write no DPI at all, so a wide image counts as Retina.
+        if let dpi = props?[kCGImagePropertyDPIWidth] as? Double, dpi > 72 { return (image, CGFloat(dpi / 72).rounded()) }
+        return (image, image.width >= 2400 ? 2 : 1)
     }
 }

@@ -29,6 +29,7 @@ Marks, applied in order (pixel coordinates of IMAGE, top-left origin):
   --arrow x1,y1,x2,y2 arrow to x2,y2     --step x,y         numbered marker (1, 2, 3…)
   --text x,y,LABEL    text               --blur x,y,w,h     pixelate (hide private info)
   --color NAME|#hex   red (default), yellow, blue, green, black, white; applies to later marks
+  --scale N           stroke and text size multiplier (default: 2 for Retina-size images, else 1)
 
 Output: prints the file path. Add --json for {"path", "width", "height", …}.
 Files go to $TMPDIR/snip/ unless -o is given.

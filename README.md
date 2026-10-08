@@ -5,8 +5,9 @@
 <h1 align="center">Snip</h1>
 
 <p align="center">
-  <b>Lark-style screenshots for Mac.</b><br>
-  Press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd>. Snap a window or drag a region, mark it up, hide what's private, and copy or pin it.
+  <b>Screenshots for you and your agent.</b><br>
+  Press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd> to snap, mark up, scroll, record, and pin.<br>
+  Your coding agent runs <code>snip</code> to do the same from the terminal.
 </p>
 
 <p align="center">
@@ -19,14 +20,44 @@
 </p>
 
 <p align="center">
-  <img src="Marketing/appstore-v2/1-snap.png" alt="Snap any window or region" width="880">
+  <a href="Marketing/readme/assets/demo.mp4"><img src="Marketing/readme/assets/demo.gif" alt="Snip in 27 seconds: select and mark up, scroll a long chat, record a region, then an agent runs snip shot, ocr, mark, and pin" width="880"></a><br>
+  <sub><a href="Marketing/readme/assets/demo.mp4">Watch in full quality (MP4)</a></sub>
 </p>
+
+## For you and your agent
+
+<p align="center">
+  <img src="Marketing/readme/assets/hero.png" alt="Left: a person marks up a dashboard with ⌘⇧A. Right: an agent runs snip shot, ocr, mark, and pin, and the marked screenshot floats on screen." width="880">
+</p>
+
+<table>
+  <tr>
+    <th width="50%">You press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd></th>
+    <th width="50%">Your agent runs <code>snip</code></th>
+  </tr>
+  <tr>
+    <td valign="top">
+      Click a window or drag a region.<br>
+      Box it, arrow it, number the steps, blur the secrets.<br>
+      Scroll for one long image, or record an MP4.<br>
+      <kbd>Enter</kbd> copies it. Or pin it above everything.
+    </td>
+    <td valign="top">
+      <code>snip shot --app Safari</code> to see what you see.<br>
+      <code>snip scroll --app Slack</code> for the whole thread.<br>
+      <code>snip ocr</code> finds the words, with pixel boxes.<br>
+      <code>snip mark</code> and <code>snip pin</code> to point you at the problem.
+    </td>
+  </tr>
+</table>
+
+Same app, same stitching, same markup style. [Set up the CLI](#for-agents) in one command.
 
 ## Why
 
 If you've used the screenshot tool in Lark, you know the flow: one hotkey, the screen freezes, you click the window you want, draw a box and an arrow, and hit Enter. It's on your clipboard before you've thought about it.
 
-Snip brings that flow to the Mac as a tiny native menu bar app. There's no Electron, no account, and no uploads.
+Snip brings that flow to the Mac as a tiny native menu bar app. There's no Electron, no account, and no uploads. Then it hands the same tools to your coding agent, so it can look at your screen and show you what it means instead of describing it.
 
 ## Features
 
@@ -48,6 +79,12 @@ Snip brings that flow to the Mac as a tiny native menu bar app. There's no Elect
     <td><b>Stays on your Mac.</b> Text recognition runs on device with Apple's Vision framework. Snip makes no network requests.</td>
   </tr>
 </table>
+
+<p align="center">
+  <img src="Marketing/readme/assets/scroll-record.png" alt="Scrolling screenshot of a chat with a live preview, and a screen recording of a dashboard region with pause and stop controls" width="880">
+</p>
+
+**Scroll it. Record it.** Select a region and press the scroll button: scroll at your own pace and Snip stitches one long image as you go, keeping sticky headers and sidebars out of the middle. Or press record for an MP4 of any region, with pause, resume, and <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd> to stop.
 
 Also included:
 
@@ -114,6 +151,11 @@ Snip captures only when you ask it to, and records video only after you press Re
 
 `snip` is the same capture, stitching, recording, and markup as a command-line tool, so coding agents (Claude Code, Codex, Cursor, anything with a shell) can see your screen and show you things.
 
+<p align="center">
+  <img src="Marketing/readme/assets/agent-marked.png" alt="A dashboard screenshot marked by an agent: the churn card boxed and numbered, an arrow and a note saying Churn went up. Worth a look?, and the week 11 bar circled" width="640"><br>
+  <sub>Marked up by an agent with <code>snip mark</code>.</sub>
+</p>
+
 ```sh
 ./install-cli.sh                                  # installs ~/.local/bin/snip
 snip shot --app Safari                            # screenshot a window
@@ -159,6 +201,7 @@ Sources/Snip/
 Marketing/
   html/                   App Store screenshots as HTML (render.sh)
   appstore-v2/            rendered 2880×1800 screenshots
+  readme/                 README images and the demo video as HTML (render.sh)
   APP_STORE.md            store listing copy
 skills/snip/SKILL.md      how agents use `snip`
 archive.sh                sandboxed Mac App Store build

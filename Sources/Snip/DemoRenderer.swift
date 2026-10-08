@@ -25,11 +25,12 @@ enum DemoRenderer {
             // Loupe sits to the right of the cursor, centered on the orange bar, clear of the summary.
             view.demoMagnifierOffset = CGPoint(x: 36, y: -78)
             view.applyDemoState(selection: nil, mouse: p(990, 500), annotations: [], tool: nil, color: red, sizeLevel: 1)
-        case "annotate", "pin":
+        case "annotate", "pin", "select":
             view.demoShowsSizeLabel = false
+            // "select" is the same state before any marks, for the README motion demo.
             view.applyDemoState(
                 selection: r(308, 124, 868, 548), mouse: nil,
-                annotations: [
+                annotations: script == "select" ? [] : [
                     .rect(r(958, 392, 68, 180), red, 4),
                     .arrow(p(760, 622), p(944, 500), red, 4),
                     .marker(1, p(1026, 392), red, 13),
