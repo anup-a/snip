@@ -1,6 +1,33 @@
 import AppKit
+import SnipKit
 
-final class IconButton: NSButton {
+/// Toolbar button with a soft rounded highlight while the pointer is over it.
+class HoverButton: NSButton {
+    private(set) var isHovered = false {
+        didSet { if isHovered != oldValue { needsDisplay = true } }
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { isHovered = true }
+    override func mouseExited(with event: NSEvent) { isHovered = false }
+
+    override func viewDidHide() {
+        super.viewDidHide()
+        isHovered = false
+    }
+
+    func drawHover() {
+        guard isHovered else { return }
+        NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 5, yRadius: 5).fill(NSColor(white: 0, alpha: 0.06))
+    }
+}
+
+final class IconButton: HoverButton {
     var isActive = false {
         didSet {
             contentTintColor = isActive ? accentBlue : baseTint
@@ -37,13 +64,15 @@ final class IconButton: NSButton {
         if isActive {
             NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 5, yRadius: 5)
                 .fill(accentBlue.withAlphaComponent(0.12))
+        } else {
+            drawHover()
         }
         super.draw(dirtyRect)
     }
 }
 
 /// A button that paints itself (size dots, color swatches).
-final class PaintButton: NSButton {
+final class PaintButton: HoverButton {
     var isActive = false { didSet { needsDisplay = true } }
     private let painter: (CGRect, Bool) -> Void
     private let handler: () -> Void
@@ -67,7 +96,10 @@ final class PaintButton: NSButton {
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
-    override func draw(_ dirtyRect: NSRect) { painter(bounds, isActive) }
+    override func draw(_ dirtyRect: NSRect) {
+        drawHover()
+        painter(bounds, isActive)
+    }
 }
 
 private final class Separator: NSView {
@@ -171,7 +203,7 @@ final class ToolbarView: FloatingBar {
         grip.widthAnchor.constraint(equalToConstant: 14).isActive = true
         grip.heightAnchor.constraint(equalToConstant: 30).isActive = true
         stack.addArrangedSubview(grip)
-        // Same order as Lark: annotation tools, then pin/OCR, then undo/save, then cancel/confirm.
+        // Same order as Lark: annotation tools, then pin/OCR/scroll/record, then undo/save, then cancel/confirm.
         for tool in Tool.allCases {
             let button = IconButton(symbol: tool.symbol, tip: tool.tip) { [weak self] in self?.overlay?.toggleTool(tool) }
             toolButtons.append((tool, button))
@@ -180,6 +212,8 @@ final class ToolbarView: FloatingBar {
         stack.addArrangedSubview(separator())
         stack.addArrangedSubview(IconButton(symbol: "pin", tip: "Pin to screen") { [weak self] in self?.overlay?.pin() })
         stack.addArrangedSubview(IconButton(symbol: "text.viewfinder", tip: "Extract text") { [weak self] in self?.overlay?.recognizeText() })
+        stack.addArrangedSubview(IconButton(symbol: "rectangle.expand.vertical", tip: "Scrolling screenshot") { [weak self] in self?.overlay?.scrollCapture() })
+        stack.addArrangedSubview(IconButton(symbol: "record.circle", tip: "Record screen") { [weak self] in self?.overlay?.record() })
         stack.addArrangedSubview(separator())
         stack.addArrangedSubview(IconButton(symbol: "arrow.uturn.backward", tip: "Undo (⌘Z)") { [weak self] in self?.overlay?.undo() })
         stack.addArrangedSubview(IconButton(symbol: "square.and.arrow.down", tip: "Save (⌘S)") { [weak self] in self?.overlay?.save() })

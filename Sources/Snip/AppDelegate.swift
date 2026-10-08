@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 import Carbon.HIToolbox
 import ServiceManagement
 
@@ -34,7 +35,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
 
         hotKey = HotKey(keyCode: UInt32(kVK_ANSI_A), modifiers: UInt32(cmdKey | shiftKey)) { [weak self] in
-            self?.capture()
+            // While a scrolling capture or recording runs, the shortcut finishes it.
+            if let live = Live.current {
+                live.finish()
+            } else {
+                self?.capture()
+            }
         }
 
         // Lets scripts trigger a capture: post "com.anup.snip.capture" as a distributed notification.
@@ -54,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func capture() {
         NSLog("Snip capture requested (screen access: \(CGPreflightScreenCaptureAccess()))")
-        guard session == nil else { return }
+        guard session == nil, Live.current == nil else { return }
         guard CGPreflightScreenCaptureAccess() else {
             PermissionWindow.show()
             return

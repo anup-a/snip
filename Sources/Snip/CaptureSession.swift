@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 
 /// One screenshot pass: an overlay window per display, torn down on finish.
 final class CaptureSession {

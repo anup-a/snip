@@ -55,6 +55,8 @@ Also included:
 - **Pixel-exact framing.** A magnifier shows coordinates and color. Press <kbd>C</kbd> to copy the hex value.
 - **Adjustable selection.** Eight resize handles, drag to move, and arrow keys to nudge by 1 px (10 px with Shift).
 - **Extract text.** On-device OCR copies the words in any snip.
+- **Scrolling screenshots.** Select a region, press the scroll button, and scroll. Snip stitches one long image and handles sticky headers, footers, and sidebars.
+- **Screen recording.** Record any region to MP4, with pause. Snip's own controls stay out of the video.
 - **Save or copy.** Save a PNG with <kbd>⌘</kbd> <kbd>S</kbd>, or copy with <kbd>Enter</kbd>.
 
 ## Keyboard shortcuts
@@ -106,11 +108,27 @@ The menu bar item also has **Take Screenshot** and **Launch at Login**.
 
 ## Privacy
 
-Snip captures only when you ask it to, and it never records video. Screenshots, annotations, and recognized text stay on your Mac. There's no analytics, no account, and no network access. The App Store build runs in the App Sandbox. See the [privacy policy](https://creatica.app/apps/snip/privacy).
+Snip captures only when you ask it to, and records video only after you press Record. Screenshots, annotations, and recognized text stay on your Mac. There's no analytics, no account, and no network access. The App Store build runs in the App Sandbox. See the [privacy policy](https://creatica.app/apps/snip/privacy).
 
-## Automation
+## For agents
 
-Scripts can start a capture by posting the distributed notification `com.anup.snip.capture`:
+`snip` is the same capture, stitching, recording, and markup as a command-line tool, so coding agents (Claude Code, Codex, Cursor, anything with a shell) can see your screen and show you things.
+
+```sh
+./install-cli.sh                                  # installs ~/.local/bin/snip
+snip shot --app Safari                            # screenshot a window
+snip scroll --app Slack                           # the whole scrolling window, one long image
+snip record --app "My App" --background           # start a video; `snip stop` ends it
+snip ocr shot.png --json                          # text with pixel boxes
+snip mark shot.png --box 120,340,400,90 --step 140,360 --text 600,360,"This one"
+snip pin shot.marked.png                          # float it on your screen
+```
+
+Every command prints the file it wrote (`--json` for details). `snip help` lists every flag. Agents learn the tool from [`skills/snip/SKILL.md`](skills/snip/SKILL.md); with the skills CLI: `npx skills add anup-a/snip`.
+
+The command-line tool needs Screen Recording permission for your terminal, and Accessibility for `snip scroll`.
+
+Scripts can also open the app's capture by posting the distributed notification `com.anup.snip.capture`:
 
 ```swift
 DistributedNotificationCenter.default().post(name: .init("com.anup.snip.capture"), object: nil)
@@ -119,28 +137,36 @@ DistributedNotificationCenter.default().post(name: .init("com.anup.snip.capture"
 ## Project layout
 
 ```
+Sources/SnipKit/          shared by the app and the CLI
+  Annotation.swift        shapes, mosaic, text, numbered markers, palette
+  Stitcher.swift          joins scrolled frames into one long image
+  RegionWriter.swift      writes screen frames to MP4
+Sources/SnipCLI/          the `snip` command-line tool
 Sources/Snip/
   AppDelegate.swift       menu bar item, hotkey, launch at login
   HotKey.swift            global ⌘⇧A registration
   ScreenCapturer.swift    freezes every display
   CaptureSession.swift    one capture from hotkey to output
   OverlayView.swift       selection, window snapping, magnifier, drawing
-  Annotation.swift        shapes, mosaic, text, numbered markers, palette
   Toolbar.swift           tool, color, and size pickers
   Output.swift            clipboard, PNG save, OCR, toasts
   PinWindow.swift         floating pinned snips
+  LiveRegion.swift        dimmed region, live control bar, result windows
+  ScrollCapture.swift     scrolling screenshot
+  ScreenRecorder.swift    region recording
   PermissionWindow.swift  guided Screen Recording setup
   DemoRenderer.swift      renders overlay states for marketing images
 Marketing/
   html/                   App Store screenshots as HTML (render.sh)
   appstore-v2/            rendered 2880×1800 screenshots
   APP_STORE.md            store listing copy
+skills/snip/SKILL.md      how agents use `snip`
 archive.sh                sandboxed Mac App Store build
+install-cli.sh            builds and installs `snip`
 ```
 
 ## Not yet
 
-- Scrolling capture
 - Snapping to individual buttons or panels inside a window (only whole windows for now)
 
 Issues and pull requests are welcome.

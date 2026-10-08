@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 
 /// Renders scripted overlay states offscreen for App Store screenshots.
 /// Usage: SNIP_DEMO_IMAGE=scene.png SNIP_DEMO_WINDOWS="x,y,w,h" Snip --render-demo <script> <out.png>

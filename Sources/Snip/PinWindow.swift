@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 
 /// A screenshot pinned above everything. Drag to move, scroll to zoom, double-click or Esc to close.
 final class PinWindow: NSPanel {

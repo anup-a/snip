@@ -1,12 +1,12 @@
 import AppKit
 
-let accentBlue = NSColor(srgbRed: 0x33 / 255, green: 0x70 / 255, blue: 0xFF / 255, alpha: 1)
+public let accentBlue = NSColor(srgbRed: 0x33 / 255, green: 0x70 / 255, blue: 0xFF / 255, alpha: 1)
 /// The lighter blue Lark uses for the capture rectangle and its handles.
-let selectionBlue = NSColor(srgbRed: 0x4C / 255, green: 0xA4 / 255, blue: 0xFF / 255, alpha: 1)
-let cancelRed = NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1)
-let confirmGreen = NSColor(srgbRed: 0x2E / 255, green: 0xB8 / 255, blue: 0x5C / 255, alpha: 1)
+public let selectionBlue = NSColor(srgbRed: 0x4C / 255, green: 0xA4 / 255, blue: 0xFF / 255, alpha: 1)
+public let cancelRed = NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1)
+public let confirmGreen = NSColor(srgbRed: 0x2E / 255, green: 0xB8 / 255, blue: 0x5C / 255, alpha: 1)
 
-let palette: [NSColor] = [
+public let palette: [NSColor] = [
     NSColor(srgbRed: 0xF5 / 255, green: 0x4A / 255, blue: 0x45 / 255, alpha: 1), // red
     NSColor(srgbRed: 0xFF / 255, green: 0xC6 / 255, blue: 0x0A / 255, alpha: 1), // yellow
     accentBlue,
@@ -15,10 +15,10 @@ let palette: [NSColor] = [
     .white,
 ]
 
-enum Tool: CaseIterable {
+public enum Tool: CaseIterable {
     case rect, ellipse, arrow, pen, text, marker, mosaic
 
-    var symbol: String {
+    public var symbol: String {
         switch self {
         case .rect: "square"
         case .ellipse: "circle"
@@ -30,7 +30,7 @@ enum Tool: CaseIterable {
         }
     }
 
-    var tip: String {
+    public var tip: String {
         switch self {
         case .rect: "Rectangle"
         case .ellipse: "Ellipse"
@@ -43,7 +43,7 @@ enum Tool: CaseIterable {
     }
 }
 
-enum Annotation {
+public enum Annotation {
     case rect(CGRect, NSColor, CGFloat)
     case ellipse(CGRect, NSColor, CGFloat)
     case arrow(CGPoint, CGPoint, NSColor, CGFloat)
@@ -52,12 +52,12 @@ enum Annotation {
     case text(String, CGRect, NSColor, CGFloat)
     case marker(Int, CGPoint, NSColor, CGFloat)
 
-    var isMarker: Bool {
+    public var isMarker: Bool {
         if case .marker = self { return true }
         return false
     }
 
-    var isMeaningful: Bool {
+    public var isMeaningful: Bool {
         switch self {
         case let .rect(r, _, _), let .ellipse(r, _, _): r.width > 2 || r.height > 2
         case let .arrow(a, b, _, _): hypot(b.x - a.x, b.y - a.y) > 3
@@ -66,7 +66,7 @@ enum Annotation {
     }
 
     /// Draws into the current NSGraphicsContext using overlay (view) coordinates.
-    func draw(mosaic: CGImage?, canvas: CGRect) {
+    public func draw(mosaic: CGImage?, canvas: CGRect) {
         switch self {
         case let .rect(r, color, width):
             color.setStroke()
@@ -119,7 +119,7 @@ enum Annotation {
         }
     }
 
-    static func polyline(_ points: [CGPoint]) -> NSBezierPath {
+    public static func polyline(_ points: [CGPoint]) -> NSBezierPath {
         let path = NSBezierPath()
         guard let first = points.first else { return path }
         path.move(to: first)
@@ -132,7 +132,7 @@ enum Annotation {
     }
 
     /// Tapered arrow with a filled head.
-    static func arrowPath(from: CGPoint, to: CGPoint, width: CGFloat) -> NSBezierPath? {
+    public static func arrowPath(from: CGPoint, to: CGPoint, width: CGFloat) -> NSBezierPath? {
         let dx = to.x - from.x, dy = to.y - from.y
         let length = hypot(dx, dy)
         guard length > 1 else { return nil }
@@ -157,19 +157,19 @@ enum Annotation {
 }
 
 extension NSBezierPath {
-    func fill(_ color: NSColor) {
+    public func fill(_ color: NSColor) {
         color.setFill()
         fill()
     }
 }
 
 extension NSColor {
-    var isLight: Bool {
+    public var isLight: Bool {
         guard let c = usingColorSpace(.sRGB) else { return false }
         return 0.299 * c.redComponent + 0.587 * c.greenComponent + 0.114 * c.blueComponent > 0.7
     }
 
-    var hexString: String {
+    public var hexString: String {
         guard let c = usingColorSpace(.sRGB) else { return "#000000" }
         return String(format: "#%02X%02X%02X", Int(round(c.redComponent * 255)), Int(round(c.greenComponent * 255)), Int(round(c.blueComponent * 255)))
     }

@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 
 /// Walks the user through granting Screen Recording, then relaunches Snip so the grant takes effect.
 final class PermissionWindow: NSWindow {

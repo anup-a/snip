@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 import UniformTypeIdentifiers
 import Vision
 

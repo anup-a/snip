@@ -1,4 +1,5 @@
 import AppKit
+import SnipKit
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
@@ -310,8 +311,14 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         default: break
         }
         guard phase == .selected, let sel = selection else { NSCursor.crosshair.set(); return }
-        if !toolbar.isHidden && toolbar.frame.contains(p) || !options.isHidden && options.frame.contains(p) {
-            (toolbar.isOverGrip(convert(p, to: toolbar)) ? NSCursor.openHand : NSCursor.arrow).set()
+        if let bar = [toolbar, options].first(where: { !$0.isHidden && $0.frame.contains(p) }) {
+            if bar === toolbar && toolbar.isOverGrip(convert(p, to: toolbar)) {
+                NSCursor.openHand.set()
+            } else if let button = bar.hitTest(p) as? NSButton, button.isEnabled {
+                NSCursor.pointingHand.set()
+            } else {
+                NSCursor.arrow.set()
+            }
             return
         }
         if let (hx, hy) = handle(at: p, in: sel) {
@@ -724,6 +731,19 @@ final class OverlayView: NSView, NSTextFieldDelegate {
         guard let (image, _) = finishedImage() else { return }
         session?.finish(restoreFocus: false)
         Output.recognizeText(in: image)
+    }
+
+    func scrollCapture() { startLive(ScrollCapture.start) }
+
+    func record() { startLive(ScreenRecorder.start) }
+
+    /// Hands the selection to a capture that keeps running live after the overlay closes.
+    private func startLive(_ start: (CGRect, NSScreen) -> Void) {
+        commitText()
+        guard let sel = selection else { return }
+        let region = sel.offsetBy(dx: shot.frame.minX, dy: shot.frame.minY)
+        session?.finish()
+        start(region, shot.screen)
     }
 
     func cancel() { session?.cancel() }
