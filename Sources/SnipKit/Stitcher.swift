@@ -20,6 +20,8 @@ public final class Stitcher {
     private var footer: Int?
     /// Sample columns that don't follow the scroll; ignored when matching.
     private var ignored = [Bool](repeating: false, count: Stitcher.columns)
+    /// The last accepted move, where the next search starts (scrolling speed changes smoothly).
+    private var lastDy: Int?
     public private(set) var height = 0
 
     public init() {}
@@ -50,8 +52,11 @@ public final class Stitcher {
                 return .unchanged
             }
         }
-        guard let match = Stitcher.match(lastRows, rows, height: frame.height, ignored: ignored) else {
-            return Stitcher.isSameView(lastRows, rows) ? .unchanged : .lost
+        guard let match = Stitcher.match(lastRows, rows, height: frame.height, ignored: ignored, hint: lastDy) else {
+            if Stitcher.isSameView(lastRows, rows) { return .unchanged }
+            // Content moved down (scrolled back up, or bounced at the end): wait for it to come back.
+            if Stitcher.match(rows, lastRows, height: frame.height, ignored: ignored, hint: nil) != nil { return .unchanged }
+            return .lost
         }
         for (i, dynamic) in match.dynamic.enumerated() where dynamic { ignored[i] = true }
         guard match.dy > 0 else { return .unchanged }
@@ -64,6 +69,7 @@ public final class Stitcher {
         last = frame
         lastRows = rows
         height += match.dy
+        lastDy = match.dy
         return .added
     }
 
@@ -146,10 +152,11 @@ public final class Stitcher {
     /// Finds how far content moved up between two frames.
     ///
     /// Only columns whose content changed are compared: blank margins and sticky sidebars say nothing
-    /// about the scroll. A match must be near exact, though the worst quarter of those columns may
-    /// disagree (an animation nobody has flagged yet); blank columns never count, so this can't
-    /// paper over a wrong offset.
-    public static func match(_ a: [UInt8], _ b: [UInt8], height h: Int, ignored: [Bool]) -> Match? {
+    /// about the scroll. A row lines up when nearly all of those columns agree (a quarter may disagree:
+    /// a video or scrollbar nobody has flagged yet). Up to a fifth of the rows that hold any content may
+    /// still disagree, for a hover highlight or a blinking caret moving across the page. A wrong offset
+    /// misaligns almost every row with content, so it can't pass.
+    public static func match(_ a: [UInt8], _ b: [UInt8], height h: Int, ignored: [Bool], hint: Int?) -> Match? {
         let w = columns, tol = tolerance
         let none = [Bool](repeating: false, count: w)
         let usable = (0..<w).filter { !ignored[$0] }
@@ -172,39 +179,110 @@ public final class Stitcher {
         let minOverlap = max(24, band / 6)
         guard band > minOverlap + 1 else { return nil }
 
-        let outliers = moving.count / 4
-        let samplesPerRow = moving.count - outliers
-        var counts = [Int](repeating: 0, count: w)
-        /// Mismatched samples per 1024 over the overlap, after dropping the worst `outliers` columns.
-        func score(_ dy: Int, limit: Int) -> Int {
-            let n = band - dy
-            for i in moving { counts[i] = 0 }
-            let cap = limit == .max ? Int.max : limit * n * samplesPerRow / 1024 + outliers * n
-            var total = 0
-            for y in top..<(top + n) {
-                let oa = (y + dy) * w, ob = y * w
-                for i in moving where abs(Int(a[oa + i]) - Int(b[ob + i])) > tol {
-                    counts[i] += 1
-                    total += 1
-                }
-                if total > cap { return .max }
+        // A row "has content" when its moving columns aren't one flat colour; blank rows match anything.
+        func hasContent(_ rows: [UInt8], _ y: Int) -> Bool {
+            let o = y * w
+            var lo = 255, hi = 0
+            for i in moving {
+                let v = Int(rows[o + i])
+                lo = min(lo, v)
+                hi = max(hi, v)
             }
-            let worst = moving.map { counts[$0] }.sorted(by: >).prefix(outliers).reduce(0, +)
-            return (total - worst) * 1024 / (n * samplesPerRow)
+            return hi - lo > 24
         }
-        var best = (dy: 0, score: Int.max)
-        for dy in 1...(band - minOverlap) {
-            let s = score(dy, limit: best.score)
-            if s < best.score { best = (dy, s) }
-            if best.score == 0 { break }
+        let contentA = (0..<h).map { hasContent(a, $0) }
+        let contentB = (0..<h).map { hasContent(b, $0) }
+        let mc = moving.count
+        let dropColumns = mc / 4
+        var off = [Bool](repeating: false, count: band * mc)
+        var columnMisses = [Int](repeating: 0, count: mc)
+
+        /// Mismatched samples per 1024 after dropping the worst quarter of columns (a video, the
+        /// scrollbar) and the worst fifth of rows with content (a hover highlight, a caret), plus the
+        /// untrimmed count to break ties.
+        func score(_ dy: Int) -> (trimmed: Int, raw: Int) {
+            let n = band - dy
+            for c in 0..<mc { columnMisses[c] = 0 }
+            var total = 0
+            var rows: [Int] = []
+            rows.reserveCapacity(n)
+            for r in 0..<n {
+                let y = top + r
+                guard contentA[y + dy] || contentB[y] else { continue }
+                rows.append(r)
+                let oa = (y + dy) * w, ob = y * w, ro = r * mc
+                for c in 0..<mc {
+                    let i = moving[c]
+                    let miss = abs(Int(a[oa + i]) - Int(b[ob + i])) > tol
+                    off[ro + c] = miss
+                    if miss {
+                        columnMisses[c] += 1
+                        total += 1
+                    }
+                }
+            }
+            guard rows.count >= 16 else { return (.max, .max) }
+            let keptRows = rows.count - rows.count / 5
+            let keptColumns = mc - dropColumns
+            let worstColumns = Set((0..<mc).sorted { columnMisses[$0] > columnMisses[$1] }.prefix(dropColumns))
+            var rowMisses: [Int] = rows.map { r in
+                let ro = r * mc
+                var m = 0
+                for c in 0..<mc where off[ro + c] && !worstColumns.contains(c) { m += 1 }
+                return m
+            }
+            rowMisses.sort(by: >)
+            let residual = rowMisses.dropFirst(rows.count / 5).reduce(0, +)
+            return (residual * 1024 / (keptRows * keptColumns), total * 1024 / (rows.count * mc))
         }
-        // Under ~1% of the compared samples may be off.
+
+        let maxDy = band - minOverlap
+        // Rank every offset on a few dozen rows with content, then score the best few in full.
+        let contentRowsB = (top..<(top + band)).filter { contentB[$0] }
+        var quick: [(dy: Int, cost: Int)] = []
+        quick.reserveCapacity(maxDy)
+        for dy in 1...maxDy {
+            let limitY = top + band - dy
+            let usableRows = contentRowsB.prefix { $0 < limitY }
+            guard !usableRows.isEmpty else { continue }
+            let stride = max(1, usableRows.count / 40)
+            var cost = 0, count = 0
+            for k in Swift.stride(from: usableRows.startIndex, to: usableRows.endIndex, by: stride) {
+                let y = usableRows[k]
+                let oa = (y + dy) * w, ob = y * w
+                var m = 0
+                for i in moving where abs(Int(a[oa + i]) - Int(b[ob + i])) > tol { m += 1 }
+                cost += min(m, mc / 3) // one hover row can't sink the true offset
+                count += 1
+            }
+            quick.append((dy, cost * 1024 / count))
+        }
+        var candidates = Set(quick.sorted { $0.cost < $1.cost }.prefix(12).map(\.dy))
+        if let hint, hint <= maxDy { candidates.insert(hint) }
+
+        var best = (dy: 0, score: Int.max, raw: Int.max)
+        for dy in candidates.sorted() {
+            let s = score(dy)
+            if s.trimmed <= 10, s.raw < best.raw || (s.raw == best.raw && s.trimmed < best.score) {
+                best = (dy, s.trimmed, s.raw)
+            }
+        }
+        // Under ~1% of the remaining samples may be off.
         guard best.score <= 10 else { return nil }
 
-        _ = score(best.dy, limit: .max)
+        // Columns that disagree on rows that otherwise line up don't scroll with the page.
         let n = band - best.dy
+        var counts = [Int](repeating: 0, count: w)
+        var good = 0
+        for y in top..<(top + n) {
+            let oa = (y + best.dy) * w, ob = y * w
+            let misses = moving.filter { abs(Int(a[oa + $0]) - Int(b[ob + $0])) > tol }
+            guard misses.count <= dropColumns else { continue } // a hover row, not a column
+            good += 1
+            for i in misses { counts[i] += 1 }
+        }
         var dynamic = none
-        for i in moving where counts[i] * 25 > n { dynamic[i] = true } // over 4% of rows: not scrolling with the page
+        for i in moving where counts[i] * 25 > good { dynamic[i] = true } // over 4% of matching rows
         return Match(dy: best.dy, bottom: bottom, dynamic: dynamic)
     }
 }

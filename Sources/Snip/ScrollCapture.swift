@@ -66,7 +66,7 @@ final class ScrollCapture: LiveCapture {
                         await MainActor.run { self?.finish() }
                         return
                     }
-                    try await Task.sleep(nanoseconds: 60_000_000)
+                    await Task.yield()
                 }
             } catch is CancellationError {
             } catch {
