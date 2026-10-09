@@ -6,6 +6,7 @@
 
 <p align="center">
   <b>Screenshots for you and your agent.</b><br>
+  The fastest screenshots on a Mac, <a href="#speed">about 2x faster than macOS <code>screencapture</code></a>.<br>
   Press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd> to snap, mark up, scroll, record, and pin.<br>
   Your coding agent runs <code>snip</code> to do the same from the terminal.
 </p>
