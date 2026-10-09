@@ -12,11 +12,15 @@ enum Commands {
         var args = ArgReader(argv)
         let json = args.flag("--json")
         let out = outputURL(try args.value("-o", "--out"), ext: "png", prefix: "shot")
-        let target = try await Target.resolve(&args)
+        let target = try await Target.resolve(&args, stills: true)
+        Trace.mark("resolved target")
         try args.finish()
         let image = try await target.capture()
-        try ImageFile.writePNG(image, scale: target.scale, to: out)
-        report(["path": out.path, "width": image.width, "height": image.height, "scale": target.scale, "target": target.label], json: json)
+        Trace.mark("captured")
+        let scale = target.scale(of: image)
+        try ImageFile.writePNG(image, scale: scale, opaque: target.opaque, to: out)
+        Trace.mark("wrote PNG")
+        report(["path": out.path, "width": image.width, "height": image.height, "scale": scale, "target": target.label], json: json)
     }
 
     // MARK: scroll
@@ -120,7 +124,7 @@ enum Commands {
         config.pixelFormat = kCVPixelFormatType_32BGRA
         config.colorSpaceName = CGColorSpace.sRGB
         config.queueDepth = 6
-        let stream = SCStream(filter: target.filter, configuration: config, delegate: nil)
+        let stream = SCStream(filter: target.filter!, configuration: config, delegate: nil)
         try stream.addStreamOutput(writer, type: .screen, sampleHandlerQueue: writer.queue)
         try await stream.startCapture()
         try Background.writeState(path: out.path)
@@ -132,7 +136,7 @@ enum Commands {
         guard let url = await writer.finish() else { throw CLIError("nothing was recorded") }
         let duration = try await AVURLAsset(url: url).load(.duration).seconds
         report(["path": url.path, "width": Int(even.width), "height": Int(even.height),
-                "seconds": Double(String(format: "%.1f", duration))!, "target": target.label], json: json)
+                "seconds": NSDecimalNumber(string: String(format: "%.1f", duration)), "target": target.label], json: json)
     }
 
     static func stop(_ argv: [String]) async throws {
@@ -145,7 +149,7 @@ enum Commands {
         let url = URL(fileURLWithPath: path)
         guard FileManager.default.fileExists(atPath: path) else { throw CLIError("the recording did not finish writing \(path)") }
         let duration = (try? await AVURLAsset(url: url).load(.duration).seconds) ?? 0
-        report(["path": path, "seconds": Double(String(format: "%.1f", duration))!], json: json)
+        report(["path": path, "seconds": NSDecimalNumber(string: String(format: "%.1f", duration))], json: json)
     }
 
     // MARK: mark
@@ -200,7 +204,7 @@ enum Commands {
             image = try ImageFile.read(path).0
             try args.finish()
         } else {
-            let target = try await Target.resolve(&args)
+            let target = try await Target.resolve(&args, stills: true)
             try args.finish()
             image = try await target.capture()
         }

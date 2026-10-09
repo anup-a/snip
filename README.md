@@ -176,6 +176,25 @@ Scripts can also open the app's capture by posting the distributed notification 
 DistributedNotificationCenter.default().post(name: .init("com.anup.snip.capture"), object: nil)
 ```
 
+## Speed
+
+Agents take a lot of screenshots, each one a fresh process, so `snip shot` is built to be quick. Median of 20 rounds at native Retina resolution, every tool run once per round in shuffled order:
+
+| | `snip` 0.2 | `screencapture` | python `mss` | Peekaboo 4.9 |
+| --- | --- | --- | --- | --- |
+| Full screen | **376 ms** | 775 ms | 693 ms (1x only) | 1,127 ms |
+| Region | **291 ms** | 611 ms | 499 ms (1x only) | 1,017 ms |
+| Window | **453 ms** | 827 ms | not supported | 5,527 ms |
+
+Apple M1, macOS 27, 2880×1800 display. The Mac was busy during the run (load average 25 to 60), so every number is high, but the order held in every run. On an idle Mac a full-screen `snip shot` takes about 200 ms. Measure your own Mac with `python3 Benchmarks/bench.py`.
+
+Where the time went:
+
+- No app setup. `snip` never starts an AppKit app for a screenshot.
+- Screens and regions come straight from ScreenCaptureKit's rect capture, without listing every window first.
+- Windows use CoreGraphics' window capture, which skips the session ScreenCaptureKit sets up for each new process (with a ScreenCaptureKit fallback).
+- PNGs are compressed on every core at once. Lossless, and smaller than macOS's own encoder.
+
 ## Project layout
 
 ```
@@ -183,6 +202,7 @@ Sources/SnipKit/          shared by the app and the CLI
   Annotation.swift        shapes, mosaic, text, numbered markers, palette
   Stitcher.swift          joins scrolled frames into one long image
   RegionWriter.swift      writes screen frames to MP4
+  PNGEncoder.swift        multi-core PNG encoder
 Sources/SnipCLI/          the `snip` command-line tool
 Sources/Snip/
   AppDelegate.swift       menu bar item, hotkey, launch at login
@@ -206,6 +226,7 @@ Marketing/
 skills/snip/SKILL.md      how agents use `snip`
 archive.sh                sandboxed Mac App Store build
 install-cli.sh            builds and installs `snip`
+Benchmarks/bench.py       screenshot CLI benchmark
 ```
 
 ## Not yet

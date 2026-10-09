@@ -1,7 +1,7 @@
 import AppKit
 import SnipKit
 
-let version = "0.1.0"
+let version = "0.2.0"
 
 let usage = """
 snip \(version): screenshots, scrolling screenshots, recordings and markup for macOS, made for agents.
@@ -38,6 +38,25 @@ Permissions: shot/scroll/record/ocr need Screen Recording for the app running sn
 scroll also needs Accessibility, because it sends scroll events.
 """
 
+/// SNIP_TRACE=1 prints how long each step took, measured from process launch, to stderr.
+enum Trace {
+    static let enabled = ProcessInfo.processInfo.environment["SNIP_TRACE"] != nil
+    private static let launch: Double = {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        sysctl(&mib, 4, &info, &size, nil, 0)
+        let t = info.kp_proc.p_un.__p_starttime
+        return Double(t.tv_sec) + Double(t.tv_usec) / 1_000_000
+    }()
+
+    static func mark(_ step: String) {
+        guard enabled else { return }
+        let ms = (Date().timeIntervalSince1970 - launch) * 1000
+        FileHandle.standardError.write(String(format: "%7.1f ms  %@\n", ms, step).data(using: .utf8)!)
+    }
+}
+
 struct CLIError: Error, CustomStringConvertible {
     let description: String
     init(_ message: String) { description = message }
@@ -62,8 +81,14 @@ struct ArgReader {
         return v
     }
 
+    /// The first argument that isn't a flag. An existing file wins, so a flag's value (`--region 0,0,9,9`) isn't mistaken for it.
     mutating func positional() -> String? {
-        guard let i = rest.firstIndex(where: { !$0.hasPrefix("-") }) else { return nil }
+        let candidates = rest.indices.filter { !rest[$0].hasPrefix("-") }
+        let isFile = { (i: Int) in FileManager.default.fileExists(atPath: (rest[i] as NSString).expandingTildeInPath) }
+        guard let i = candidates.first(where: isFile) ?? candidates.first.flatMap({ i in
+            // Not a file: only take it when it isn't right after a flag (that's the flag's value).
+            i == 0 || !rest[i - 1].hasPrefix("-") ? i : nil
+        }) else { return nil }
         return rest.remove(at: i)
     }
 
@@ -107,6 +132,7 @@ func outputURL(_ path: String?, ext: String, prefix: String) -> URL {
 
 // MARK: Entry
 
+Trace.mark("main")
 var arguments = Array(CommandLine.arguments.dropFirst())
 let command = arguments.isEmpty ? "help" : arguments.removeFirst()
 
@@ -121,8 +147,12 @@ case "pin":
     // Pin runs AppKit's own event loop, so it stays off the async path.
     do { try Pin.run(arguments) } catch { fail(error) }
 default:
-    _ = NSApplication.shared
-    NSApp.setActivationPolicy(.prohibited)
+    // Only the commands that drive other apps need AppKit's app object; setting it up costs more than a screenshot.
+    if ["scroll", "record"].contains(command) {
+        _ = NSApplication.shared
+        NSApp.setActivationPolicy(.prohibited)
+        Trace.mark("NSApplication")
+    }
     Task {
         do {
             switch command {
